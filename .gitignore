@@ -1,1 +1,8 @@
-build
+# Build directory
+build/
+
+# Private files (i.e. for client-specific initialization scripts)
+private/
+
+# Visual Studio code settings
+.vscode/
