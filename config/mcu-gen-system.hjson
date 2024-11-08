@@ -1,0 +1,39 @@
+# Copyright 2024 Politecnico di Torino.
+# Solderpad Hardware License, Version 2.1, see LICENSE.md for details.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+#
+# File: mcu-gen.hjson
+# Author: Luigi Giuffrida
+# Date: 10/03/2024
+# Description: X-HEEP configuration for gr-HEEP
+
+{
+    ram_address: 0
+    bus_type: "NtoM",
+    ram_banks: {
+        code_and_data: {
+            num: 2
+            sizes: [32]
+        },
+        data_interleaved: {
+            auto_section: auto
+            type: interleaved
+            num: 2
+            size: 16
+        }
+    }
+
+    linker_sections:
+    [
+        {
+            name: code
+            start: 0
+            #minimum size for freeRTOS and clang
+            size: 0x00000E800
+        },
+        {
+            name: data
+            start: 0x00000E800
+        }
+    ]
+}
