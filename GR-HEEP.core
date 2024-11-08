@@ -1,0 +1,258 @@
+CAPI=2:
+
+# Copyright 2024 Politecnico di Torino.
+# Solderpad Hardware License, Version 2.1, see LICENSE.md for details.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+#
+# File: GR-HEEP.core
+# Author: Luigi Giuffrida
+# Date: 03/10/2024
+# Description: Top-level file for GR-HEEP
+# ATTENTION: This file is just a template. It is not meant to be used as it is.
+#            Please replace all references to "GR-HEEP" with the name of your project.
+
+name: polito:gr_heep:gr_heep:0.1
+description: Top-level file for GR-HEEP
+
+filesets:
+  # The fileset containing the top-level HDL files
+  rtl:
+    depend:
+    - polito:gr_heep:packages
+    files:
+    - hw/top/gr_heep_top.sv
+    - hw/pad-ring/pad_ring.sv
+    file_type: systemVerilogSource
+
+  # The fileset containing the top-level HDL files to be formatted and linted
+  rtl-format:
+    depend:
+      - polito:gr_heep:packages
+    files:
+    - hw/top/gr_heep_top.sv
+    - hw/pad-ring/pad_ring.sv
+    file_type: systemVerilogSource
+
+  # X-HEEP RTL (separated to avoid Verible errors)
+  rtl-x-heep:
+    depend:
+    - openhwgroup.org:systems:core-v-mini-mcu
+    - x-heep::packages
+    - x-heep:ip:pad_control
+
+  # RTL testbench system
+  tb-system:
+    files:
+    - tb/tb_system.sv
+    - tb/tb_util.svh: {is_include_file: true}
+    file_type: systemVerilogSource
+
+  # Verilator C++ testbench
+  tb-verilator:
+    files:
+    - tb/verilator/tb_macros.cpp
+    - tb/verilator/gr_heep_tb.cpp
+    - tb/verilator/tb_macros.hh: {is_include_file: true}
+    file_type: cppSource
+
+  # Modelsim/VCS testbench
+  # NOTE: defined separately to avoid formatting
+  tb-others:
+    files:
+    - tb/tb_top.sv
+    file_type: systemVerilogSource
+
+  # Modelsim/VCS testbench vendored modules
+  tb-others-vendor:
+    depend:
+    - ::spiflash:0
+
+    # Verilator waviver files
+  verilator-waivers:
+    files:
+    - tb/misc/tb-waivers.vlt
+    - hw/misc/gr-heep-waivers.vlt
+    - hw/misc/heep-waivers.vlt
+    file_type: vlt
+
+  # RTL testbench system vendored modules
+  # NOTE: defined separately to avoid formatting
+  tb-system-vendor:
+    depend:
+    - lowrisc:dv_dpi:uartdpi
+    - example:ip:gpio_cnt
+
+  # Scripts for hooks
+  pre_build_uartdpi:
+    files:
+    - scripts/sim/compile_uart_dpi.sh
+    file_type: user
+
+scripts:
+  # QuestaSim build uartdip
+  pre_build_uartdpi:
+    cmd:
+    - bash
+    - ../../../scripts/sim/compile_uart_dpi.sh
+
+  pre_patch_modelsim_Makefile:
+    cmd:
+    - python
+    - ../../../hw/vendor/x-heep/scripts/sim/modelsim/patch_modelsim_Makefile.py
+
+targets:
+  default: &default
+    filesets:
+    - rtl
+    - rtl-x-heep
+    toplevel: gr_heep_top
+  
+  # RTL simulation
+  sim: &sim
+    <<: *default
+    description: Simulate the design using Verilator
+    default_tool: verilator
+    filesets_append:
+    - tb-system
+    - tb-system-vendor
+    - "!tool_verilator ? (tb-others)"
+    - "!tool_verilator ? (tb-others-vendor)"
+    - tool_verilator ? (tb-verilator)
+    - tool_verilator ? (verilator-waivers)
+    - tool_modelsim? (pre_build_uartdpi)
+    toplevel:
+    - tool_verilator ? (tb_system)
+    - "!tool_verilator ? (tb_top)"
+    hooks:
+      pre_build:
+      - tool_modelsim? (pre_build_uartdpi)
+      - tool_modelsim? (pre_patch_modelsim_Makefile)
+    parameters_append:
+    - boot_mode
+    - firmware
+    - log_level
+    - max_cycles
+    - trace
+    - RTL_SIMULATION=true
+    tools:
+      modelsim:
+        vlog_options:
+        - -override_timescale 1ns/1ps
+        - -suppress vlog-2577
+        - -suppress vlog-2583
+        - -pedanticerrors
+        - -define MODELSIM
+        vsim_options:
+        - -suppress 3111 # suppress error on passing string variables to $fdumpvars, that is apparently supported instead
+        - -sv_lib ../../sw/sim/uartdpi
+        - -voptargs=+acc=npr
+        - "-64"
+      verilator:
+        mode: cc
+        verilator_options:
+        - '--cc'
+        - '--assert'
+        - '--trace'
+        - '--trace-fst'
+        - '--trace-structs'
+        - '--trace-max-array 128'
+        - '--x-assign unique'
+        - '--x-initial unique'
+        #- '--threads 2' # only use with Verilator v5.XXX
+        - '--exe'
+        - 'gr_heep_tb.cpp'
+        - '-Wall'
+        - '-Wpedantic'
+        - '-LDFLAGS "-pthread -lutil -lelf"'
+        # - '-CFLAGS "-Wall -g"'
+
+  # Format with Verible
+  format:
+    filesets:
+    - rtl-format
+    toplevel: gr_heep_top
+    description: Format source files using verible-verilog-format
+    default_tool: veribleformat
+    tools:
+      veribleformat:
+        verible_format_args:
+        - '--assignment_statement_alignment=align'
+        - '--case_items_alignment=align'
+        - '--formal_parameters_indentation=indent'
+        - '--named_parameter_alignment=align'
+        - '--named_parameter_indentation=indent'
+        - '--named_port_alignment=align'
+        - '--named_port_indentation=indent'
+        - '--port_declarations_alignment=align'
+        - '--port_declarations_indentation=indent'
+        - '--assignment_statement_alignment=align'
+        - '--module_net_variable_alignment=align'
+        - '--inplace'
+
+  # Static analysis
+  lint:
+    filesets:
+    - rtl-format
+    toplevel: gr_heep_top
+    description: Perform static analysis using Verible
+    default_tool: veriblelint
+    tools:
+      veriblelint:
+        ruleset: default
+        rules:
+        - 'line-length=length:200'
+
+# Parameters
+parameters:
+  trace:
+    datatype: str
+    description: If 'true', generate simulation waves dump.
+    default: "true"
+    paramtype: cmdlinearg
+  no_err:
+    datatype: bool
+    description: Always exit with 0. Useful to run post-simulation hooks.
+    default: "true"
+    paramtype: cmdlinearg
+  firmware:
+    datatype: str
+    description: Firmware (in HEX format) to load into the system SRAM.
+    paramtype: plusarg
+  verbose:
+    datatype: bool
+    description: Verbosity mode for QuestaSim testbench.
+    paramtype: plusarg
+  log_level:
+    datatype: str
+    description: |
+      TB log level
+    default: LOG_NORMAL
+    paramtype: plusarg
+  boot_mode:
+    datatype: str
+    description: |
+      Boot mode for QuestaSim testbench. Admitted values: jtag|flash|force.
+    default: 2
+    paramtype: plusarg
+  vcd_mode:
+    datatype: int
+    description: "VCD dump mode: 0 (no dump) | 1 (always active) | 2 (triggered by GPIO 0)"
+    default: 0
+    paramtype: plusarg
+  max_cycles:
+    datatype: int
+    description: Maximum number of simulation cycles (halt the simulation when reached).
+    paramtype: plusarg
+  RTL_SIMULATION:
+    datatype: bool
+    paramtype: vlogdefine
+    description: |
+      Select code for RTL simulation (e.g., faster SRAM initialization)
+  UNIT_DELAY:
+    datatype: int
+    paramtype: vlogdefine
+    default: 0
+  no_warning:
+    datatype: bool
+    paramtype: vlogdefine
+    default: true
