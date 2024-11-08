@@ -6,3 +6,10 @@ private/
 
 # Visual Studio code settings
 .vscode/
+
+# Modelsim files
+work/
+transcript
+
+# Ctags
+tags
