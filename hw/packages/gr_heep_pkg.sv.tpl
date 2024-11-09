@@ -41,6 +41,8 @@ package gr_heep_pkg;
   // Number of masters and slaves
   localparam int unsigned ExtXbarNMaster = 32'd${xbar_nmasters};
   localparam int unsigned ExtXbarNSlave = 32'd${xbar_nslaves};
+  localparam int unsigned ExtXbarNMasterRnd = ExtXbarNMaster > 0 ? ExtXbarNMaster : 32'd1;
+  localparam int unsigned ExtXbarNSlaveRnd = ExtXbarNSlave > 0 ? ExtXbarNSlave : 32'd1; 
   localparam int unsigned LogExtXbarNMaster = ExtXbarNMaster > 32'd1 ? $clog2(ExtXbarNMaster) : 32'd1;
   localparam int unsigned LogExtXbarNSlave = ExtXbarNSlave > 32'd1 ? $clog2(ExtXbarNSlave) : 32'd1;
 
@@ -79,6 +81,7 @@ package gr_heep_pkg;
   // Number of external peripherals
   localparam int unsigned ExtPeriphNSlave = 32'd${periph_nslaves};
   localparam int unsigned LogExtPeriphNSlave = ExtPeriphNSlave > 32'd1 ? $clog2(ExtPeriphNSlave) : 32'd1;
+  localparam int unsignes ExtPeriphNSlaveRnd = ExtPeriphNSlave > 0 ? ExtPeriphNSlave : 32'd1;
 
 % if (periph_nslaves > 0):
 
@@ -107,6 +110,8 @@ package gr_heep_pkg;
   localparam int unsigned ExtPeriphDefaultIdx = 32'd0;
 
 % endif
+
+  localparam int unsigned ExtInterrupts = 32'd${ext_interrupts};
 
 endpackage
 
