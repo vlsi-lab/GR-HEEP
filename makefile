@@ -230,11 +230,17 @@ $(PARAMS):
 ## @section Utilities
 
 ## Update vendor submodules
-## @note This target is used to update the vendor submodules
-## @param MODULE_NAME=module_name The name of the submodule to update
-.PHONY: update-vendor
-update-vendor:
+## @note These targets are used to update the vendored submodules.
+## @param MODULE_NAME=module_name The name of the submodule to update when using vendor-update.
+.PHONY: vendor-update
+vendor-update:
+	@echo "Updating vendored module '$(MODULE_NAME)'..."
 	$(PYTHON) util/vendor.py hw/vendor/$(MODULE_NAME).vendor.hjson -Uv
+
+.PHONY: vendor-update-all
+vendor-update-all:
+	@echo "Updating all vendored modules..."
+	find hw/vendor -maxdepth 1 -type f -name "*.vendor.hjson" -exec ./util/vendor.py -vU {} \;
 
 ## Check if the firmware is compiled
 .PHONY: .check-firmware
