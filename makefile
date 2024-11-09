@@ -58,6 +58,7 @@ DPI_LIBS			:= $(BUILD_DIR)/sw/sim/uartdpi.so
 DPI_CINC			:= -I$(dir $(shell which verilator))../share/verilator/include/vltstd
 
 # Simulation configuration
+VERILATOR_VERSION   ?= $(shell verilator --version | grep -oP 'Verilator \K[0-9]+')
 LOG_LEVEL			?= LOG_NORMAL
 BOOT_MODE			?= force # jtag: wait for JTAG (DPI module), flash: boot from flash, force: load firmware into SRAM
 FIRMWARE			?= $(ROOT_DIR)/build/sw/app/main.hex
@@ -65,6 +66,7 @@ VCD_MODE			?= 0 # QuestaSim-only - 0: no dumo, 1: dump always active, 2: dump tr
 MAX_CYCLES			?= 1200000
 FUSESOC_FLAGS		?=
 FUSESOC_ARGS		?=
+FUSESOC_ARGS		+= --VERILATOR_VERSION=$(VERILATOR_VERSION)
 
 # Flash file
 FLASHWRITE_FILE		?= $(FIRMWARE)

@@ -19,6 +19,8 @@ filesets:
   rtl:
     depend:
     - polito:gr_heep:packages
+    - polito:gr_heep:peripherals
+    - polito:gr_heep:ext_bus
     files:
     - hw/top/gr_heep_top.sv
     - hw/pad-ring/pad_ring.sv
@@ -134,6 +136,7 @@ targets:
     - max_cycles
     - trace
     - RTL_SIMULATION=true
+    - VERILATOR_VERSION
     tools:
       modelsim:
         vlog_options:
@@ -256,3 +259,7 @@ parameters:
     datatype: bool
     paramtype: vlogdefine
     default: true
+  VERILATOR_VERSION:
+    datatype: int
+    paramtype: vlogdefine
+    default: 4
