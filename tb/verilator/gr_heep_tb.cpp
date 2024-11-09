@@ -21,7 +21,6 @@
 
 // User libraries
 #include "tb_macros.hh"
-#include "tb_components.hh"
 #include "Vtb_system.h"
 
 // Defines
