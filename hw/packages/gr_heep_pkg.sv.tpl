@@ -90,19 +90,19 @@ package gr_heep_pkg;
     // Memory map
     // ----------
     // ${a_slave['name']}
-    localparam int unsigned ${a_slave['name']}Idx = 32'd${a_slave['idx']};
-    localparam logic [31:0] ${a_slave['name']}StartAddr = PERIPH_SLAVE_START_ADDRESS + 32'h${a_slave['offset']};
-    localparam logic [31:0] ${a_slave['name']}Size = 32'h${a_slave['size']};
-    localparam logic [31:0] ${a_slave['name']}EndAddr = ${a_slave['name']}StartAddr + 32'h${a_slave['size']};
+    localparam int unsigned ${a_slave['name']}PeriphIdx = 32'd${a_slave['idx']};
+    localparam logic [31:0] ${a_slave['name']}PeriphStartAddr = PERIPH_SLAVE_START_ADDRESS + 32'h${a_slave['offset']};
+    localparam logic [31:0] ${a_slave['name']}PeriphSize = 32'h${a_slave['size']};
+    localparam logic [31:0] ${a_slave['name']}PeriphEndAddr = ${a_slave['name']}StartAddr + 32'h${a_slave['size']};
 % endfor
     
         // External peripherals address map
         localparam addr_map_rule_t [ExtPeriphNSlave-1:0] ExtPeriphAddrRules = '{
 % for slave_idx, a_slave in enumerate(peripherals):
 % if (slave_idx < len(peripherals)-1):
-          '{idx: ${a_slave['name']}Idx, start_addr: ${a_slave['name']}StartAddr, end_addr: ${a_slave['name']}EndAddr},
+          '{idx: ${a_slave['name']}PeriphIdx, start_addr: ${a_slave['name']}PeriphStartAddr, end_addr: ${a_slave['name']}PeriphEndAddr},
 % else:
-            '{idx: ${a_slave['name']}Idx, start_addr: ${a_slave['name']}StartAddr, end_addr: ${a_slave['name']}EndAddr}
+            '{idx: ${a_slave['name']}PeriphIdx, start_addr: ${a_slave['name']}PeriphStartAddr, end_addr: ${a_slave['name']}PeriphEndAddr}
 %endif
 %endfor
         };
