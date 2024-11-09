@@ -25,6 +25,16 @@ from mako.template import Template
 # Compile a regex to trim trailing whitespaces on lines
 re_trailws = re.compile(r"[ \t\r]+$", re.MULTILINE)
 
+def CamelCase(input_string):
+    # Split the input string by non-alphanumeric characters (e.g., space, hyphen, underscore)
+    words = re.split(r'[^a-zA-Z0-9]+', input_string)
+    
+    # Capitalize the first letter of each word except the first word
+    # Join all words together to form a CamelCase string
+    camel_case = words[0].capitalize() + ''.join(word.capitalize() for word in words[1:])
+    
+    return camel_case
+
 
 def int2hexstr(n, nbits) -> str:
     """
@@ -138,12 +148,12 @@ def main():
         for a_slave, slave_config in cfg["ext_xbar_slaves"].items():
             slaves.append(
                 {
-                    "name": a_slave,
+                    "name": CamelCase(a_slave),
                     "idx": idx,
-                    "start_address": int(slave_config["start_address"]),
-                    "size": int(slave_config["size"]),
-                    "end_address": int(slave_config["start_address"])
-                    + int(slave_config["size"]),
+                    "offset": int(slave_config["offset"], 16),
+                    "size": int(slave_config["length"], 16),
+                    "end_address": int(slave_config["offset"], 16)
+                    + int(slave_config["length"], 16),
                 }
             )
             idx += 1
@@ -159,14 +169,14 @@ def main():
     if periph_nslaves > 0:
         idx = 0
         for a_peripheral, peripheral_config in cfg["ext_periph"].items():
-            slaves.append(
+            peripherals.append(
                 {
-                    "name": a_peripheral,
+                    "name": CamelCase(a_peripheral),
                     "idx": idx,
-                    "start_address": int(peripheral_config["start_address"]),
-                    "size": int(peripheral_config["size"]),
-                    "end_address": int(peripheral_config["start_address"])
-                    + int(peripheral_config["size"]),
+                    "offset": int(peripheral_config["offset"], 16),
+                    "size": int(peripheral_config["length"], 16),
+                    "end_address": int(peripheral_config["offset"], 16)
+                    + int(peripheral_config["length"], 16),
                 }
             )
             idx += 1

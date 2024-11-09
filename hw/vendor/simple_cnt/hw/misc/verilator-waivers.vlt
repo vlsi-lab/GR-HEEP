@@ -1,0 +1,30 @@
+// Copyright 2024 Politecnico di Torino.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 2.0 (the "License"); you may not use this file except in
+// compliance with the License. You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-2.0. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+//
+// File: verilator-waivers.vlt
+// Author(s):
+//   Michele Caon
+// Date: 07/11/2024
+// Description: Waivers for Verilator
+
+`verilator_config
+// Regtool automatically-generated files
+lint_off -rule PINCONNECTEMPTY -file "*/cnt_control_reg_top.sv" -match "Cell pin connected by name with empty reference: '*'"
+lint_off -rule WIDTH -file "*/cnt_control_reg_top.sv" -match "Operator ASSIGNW expects * bits on the Assign RHS, but Assign RHS's SEL generates 32 bits."
+lint_off -rule UNUSEDPARAM -file "*/cnt_control_reg_pkg.sv" -match "Parameter is not used: *"
+
+// PULP files
+lint_off -rule PINCONNECTEMPTY -file "*/prim_subreg_shadow.sv" -match "Cell pin connected by name with empty reference: '*'"
+lint_off -rule WIDTHEXPAND -file "*/prim_subreg_arb.sv" -match "Operator EQ expects 24 bits on the LHS, but LHS's VARREF 'SWACCESS' generates 16 bits."
+
+// OBI bridge
+lint_off -rule UNUSEDSIGNAL -file "*/cnt_obi_to_reg.sv" -match "Bits of signal are not used: *"
+lint_off -rule UNUSEDSIGNAL -file "*/cnt_obi.sv" -match "Bits of signal are not used: 'cnt_thr'*"
+lint_off -rule UNUSEDSIGNAL -file "*/cnt_obi.sv" -match "Bits of signal are not used: 'obi_wdata_i'*"

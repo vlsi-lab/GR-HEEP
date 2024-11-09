@@ -1,0 +1,178 @@
+CAPI=2:
+# Copyright 2024 Politecnico di Torino.
+# Copyright and related rights are licensed under the Solderpad Hardware
+# License, Version 2.0 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://solderpad.org/licenses/SHL-2.0. Unless required by applicable law
+# or agreed to in writing, software, hardware and materials distributed under
+# this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+#
+# File: cnt.core
+# Author(s):
+#   Luigi Giuffrida
+# Date: 08/11/2024
+# Description: Counter core file for FuseSoC
+
+name: polito:isa-lab:cnt:1.0.0
+description: Basic example of a counter peripheral
+
+filesets:
+  # RTL description
+  rtl:
+    files:
+    - hw/packages/cnt_obi_pkg.sv
+    - hw/packages/cnt_reg_pkg.sv
+    - hw/common/cnt_obi_to_reg.sv
+    - hw/control-reg/rtl/cnt_control_reg_pkg.sv
+    - hw/control-reg/rtl/cnt_control_reg_top.sv
+    - hw/control-reg/cnt_control_reg.sv
+    - hw/cnt_obi.sv
+    - hw/cnt.sv
+    file_type: systemVerilogSource
+
+  # Vendored RTL files
+  rtl-vendor:
+    files:
+    - hw/vendor/pulp-platform-register-interface/vendor/lowrisc_opentitan/src/prim_subreg_arb.sv
+    - hw/vendor/pulp-platform-register-interface/vendor/lowrisc_opentitan/src/prim_subreg_ext.sv
+    - hw/vendor/pulp-platform-register-interface/vendor/lowrisc_opentitan/src/prim_subreg_shadow.sv
+    - hw/vendor/pulp-platform-register-interface/vendor/lowrisc_opentitan/src/prim_subreg.sv
+    - hw/vendor/pulp-platform-common-cells/include/common_cells/assertions.svh:
+        is_include_file: true
+        include_path: hw/vendor/pulp-platform-common-cells/include
+    - hw/vendor/pulp-platform-register-interface/include/register_interface/typedef.svh:
+        is_include_file: true
+        include_path: hw/vendor/pulp-platform-register-interface/include
+    - hw/vendor/pulp-platform-register-interface/include/register_interface/assign.svh:
+        is_include_file: true
+        include_path: hw/vendor/pulp-platform-register-interface/include
+    file_type: systemVerilogSource
+
+  # Waiver files for Verilator
+  verilator-waivers:
+    files:
+    - hw/misc/verilator-waivers.vlt
+    file_type: vlt
+
+  verilator-tb:
+    files:
+    - tb/cnt_tb.cpp
+    - tb/tb_macros.cpp
+    - tb/tb_components.cpp
+    - tb/tb_components.hh: {is_include_file: true}
+    - tb/tb_macros.hh: {is_include_file: true}
+    - tb/obi.hh: {is_include_file: true}
+    - sw/cnt_control_reg.h: {is_include_file: true}
+    file_type: cppSource
+
+scripts:
+  # Prepare common directory
+  prepare_dirs:
+    cmd:
+    - mkdir
+    - "-p"
+    - "../../sim-common"
+
+  # Copy waveforms
+  copy_waves:
+    cmd:
+    - cp
+    - "logs/waves.fst"
+    - "../../sim-common/"
+
+targets:
+  default: &default
+    filesets:
+    - rtl
+    - rtl_vendor ? (rtl-vendor)
+    - target_sim ? (tool_verilator ? (verilator-waivers))
+    toplevel: cnt
+
+  sim:
+    <<: *default
+    description: Simulate the design
+    default_tool: verilator
+    toplevel: cnt_obi
+    filesets_append:
+    - verilator-tb
+    flags:
+      rtl_vendor: true
+    hooks:
+      pre_run:
+      - prepare_dirs
+      post_run:
+      - copy_waves
+    parameters:
+      - W=16
+      - tool_verilator ? (log_level)
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+        - '--cc'
+        - '--assert'
+        - '--trace'
+        - '--trace-fst'
+        - '--trace-structs'
+        - '--trace-max-array 128'
+        - '--x-assign unique'
+        - '--x-initial unique'
+        #- '--threads 2' # only use with Verilator v5.XXX
+        - '--exe'
+        - 'cnt_tb.cpp'
+        - '-Wall'
+        - '-Wpedantic'
+        - '-LDFLAGS "-pthread -lutil -lelf"'
+        - '-CFLAGS "-Wall"'
+
+  # Format with Verible
+  format:
+    <<: *default
+    description: Format source files using verible-verilog-format
+    default_tool: veribleformat
+    toplevel: cnt_obi
+    tools:
+      veribleformat:
+        verible_format_args:
+        - '--assignment_statement_alignment=align'
+        - '--case_items_alignment=align'
+        - '--formal_parameters_indentation=indent'
+        - '--named_parameter_alignment=align'
+        - '--named_parameter_indentation=indent'
+        - '--named_port_alignment=align'
+        - '--named_port_indentation=indent'
+        - '--port_declarations_alignment=align'
+        - '--port_declarations_indentation=indent'
+        - '--assignment_statement_alignment=align'
+        - '--module_net_variable_alignment=align'
+        - '--inplace'
+
+  # Static analysis
+  lint:
+    <<: *default
+    description: Perform static analysis using Verible
+    default_tool: veriblelint
+    toplevel: cnt_obi
+    tools:
+      veriblelint:
+        ruleset: default
+        verible_lint_args:
+        - '--waiver_files=../../../hw/misc/verible-lint.waiver'
+        rules:
+        - 'line-length=length:120'
+
+parameters:
+  log_level:
+    datatype: str
+    description: |
+      Set the log level. Admitted values: LOG_NONE|LOG_LOW|LOG_MEDIUM|LOG_HIGH|LOG_FULL|LOG_DEBUG. 
+      Errors and configuration messages are always printed.
+    paramtype: cmdlinearg
+  W:
+    datatype: int
+    description: |
+      Set the counter bitwidth. Maximum 32.
+    default: 32
+    paramtype: vlogparam
