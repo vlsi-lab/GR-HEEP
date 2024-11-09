@@ -91,7 +91,7 @@ package gr_heep_pkg;
     // ----------
     // ${a_slave['name']}
     localparam int unsigned ${a_slave['name']}PeriphIdx = 32'd${a_slave['idx']};
-    localparam logic [31:0] ${a_slave['name']}PeriphStartAddr = PERIPH_SLAVE_START_ADDRESS + 32'h${a_slave['offset']};
+    localparam logic [31:0] ${a_slave['name']}PeriphStartAddr = EXT_PERIPHERAL_START_ADDRESS + 32'h${a_slave['offset']};
     localparam logic [31:0] ${a_slave['name']}PeriphSize = 32'h${a_slave['size']};
     localparam logic [31:0] ${a_slave['name']}PeriphEndAddr = ${a_slave['name']}StartAddr + 32'h${a_slave['size']};
 % endfor
