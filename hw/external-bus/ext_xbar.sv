@@ -41,8 +41,10 @@ module ext_xbar #(
   logic [XBAR_NMASTER-1:0][LOG_XBAR_NSLAVE-1:0] port_sel;
 
   // Neck crossbar
+  /* verilator lint_off UNUSED */
   obi_req_t neck_req;
   obi_resp_t neck_resp;
+  /* verilator lint_on UNUSED */
 
   logic [XBAR_NMASTER-1:0] master_req_req;
   logic [XBAR_NMASTER-1:0] master_resp_gnt;
