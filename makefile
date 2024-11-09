@@ -158,6 +158,9 @@ $(GR_HEEP_GEN_LOCK): $(GR_HEEP_GEN_CFG) $(GR_HEEP_TOP_TPL) $(MCU_GEN_LOCK)
 		--tpl-sv hw/packages/gr_heep_pkg.sv.tpl \
 		--corev_pulp $(COREV_PULP)
 	python3 util/gr-heep-gen.py $(GR_HEEP_GEN_OPTS) \
+		--outdir hw/peripherals \
+		--tpl-sv hw/peripherals/gr_heep_peripherals.sv.tpl
+	python3 util/gr-heep-gen.py $(GR_HEEP_GEN_OPTS) \
 		--outdir sw/external/lib/runtime \
 		--tpl-c sw/external/lib/runtime/gr_heep.h.tpl
 	$(FUSESOC) run --no-export --target lint polito:gr_heep:gr_heep
