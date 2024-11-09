@@ -35,6 +35,19 @@ def CamelCase(input_string):
     
     return camel_case
 
+def SCREAMING_SNAKE_CASE(input_string):
+    # Replace non-alphanumeric characters with underscores and handle camelCase and PascalCase
+    words = re.sub(r'([a-z])([A-Z])', r'\1_\2', input_string)  # Insert underscores between camelCase words
+    words = re.sub(r'[^a-zA-Z0-9]+', '_', words)               # Replace non-alphanumerics with underscores
+    
+    # Convert the entire string to uppercase
+    screaming_snake_case = words.upper()
+    
+    # Remove any leading or trailing underscores
+    screaming_snake_case = screaming_snake_case.strip('_')
+    
+    return screaming_snake_case
+
 
 def int2hexstr(n, nbits) -> str:
     """
@@ -149,6 +162,7 @@ def main():
             slaves.append(
                 {
                     "name": CamelCase(a_slave),
+                    "SCREAMING_NAME": SCREAMING_SNAKE_CASE(a_slave),
                     "idx": idx,
                     "offset": int(slave_config["offset"], 16),
                     "size": int(slave_config["length"], 16),
@@ -172,6 +186,7 @@ def main():
             peripherals.append(
                 {
                     "name": CamelCase(a_peripheral),
+                    "SCREAMING_NAME": SCREAMING_SNAKE_CASE(a_peripheral),
                     "idx": idx,
                     "offset": int(peripheral_config["offset"], 16),
                     "size": int(peripheral_config["length"], 16),

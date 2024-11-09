@@ -6,6 +6,7 @@ hw/top/gr_heep_top.sv
 hw/pad-ring/pad_ring.sv
 hw/peripherals/gr_heep_peripherals.sv
 hw/packages/gr_heep_pkg.sv
+sw/external/lib/runtime/gr_heep.h
 
 # Private files (i.e. for client-specific initialization scripts)
 private/
