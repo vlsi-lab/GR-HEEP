@@ -1,0 +1,92 @@
+// Copyright 2024 Politecnico di Torino.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 2.0 (the "License"); you may not use this file except in
+// compliance with the License. You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-2.0. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+//
+// File: ctl_reg_reduced.hjson
+// Author(s):
+//   Michele Caon
+// Date: 07/11/2024
+// Description: Control register description for regtool.py
+
+{
+    name: "cnt_control",
+    clock_primary: "clk_i",
+    reset_primary: "rst_ni",
+    bus_interfaces: [
+        {
+            protocol: "reg_iface",
+            direction: "device",
+        },
+    ],
+    regwidth: "32",
+    registers: [
+        {
+            name: "CONTROL",
+            desc: "Counter main control and status register",
+            fields: [
+                {
+                    bits: "0",
+                    name: "ENABLE",
+                    desc: '''
+                        When this bit is set to 1 by software, the counter is enabled and keeps incrementing its value. Clearing this bit stops halts the counter. Default: 0.
+                    ''',
+                    swaccess: "rw",
+                    hwaccess: "hro",
+                    resval: "0",
+                },
+                {
+                    bits: "1",
+                    name: "CLEAR",
+                    desc: '''
+                        When this bit is set to one by software, the counter value is reset to zero. Default: 0.
+                    ''',
+                    swaccess: "rw",
+                    hwaccess: "hrw",
+                },
+            ],
+            swaccess: "rw",
+            hwaccess: "hro",
+            resval: "0",
+        },
+        {
+            name: "STATUS",
+            desc: "Counter status register",
+            fields: [
+                {
+                    bits: "0",
+                    name: "TC",
+                    desc: '''
+                        Set when the counter reaches the specified threshold value (see below). Cleared by reading it. NOTE: this bit is set one cycle after the counter reaches the threshold value. For precise timing, use the hardware interrupt.
+                    ''',
+                },
+            ],
+            swaccess: "rw1c",
+            hwaccess: "hwo",
+            resval: "0",
+        },
+        {
+            name: "THRESHOLD",
+            desc: "Counter threshold value",
+            fields: [
+                {
+                    bits: "31:0",
+                    name: "THRESHOLD",
+                    desc: '''
+                        The value at which the counter will generate a TC interrupt. The counter is reset to zero on the next clock tick if ENABLE is asserted. Default: all ones (max value).
+                    ''',
+                    swaccess: "rw",
+                    hwaccess: "hro",
+                    resval: "0xFFFFFFFF",
+                },
+            ],
+            swaccess: "rw",
+            hwaccess: "hro",
+        },
+    ],
+}
