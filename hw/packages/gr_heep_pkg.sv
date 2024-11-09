@@ -40,30 +40,11 @@ package gr_heep_pkg;
 
   // Number of masters and slaves
   localparam int unsigned ExtXbarNMaster = 32'd0;
-  localparam int unsigned ExtXbarNSlave = 32'd1;
-  localparam int unsigned ExtXbarNMasterRnd = ExtXbarNMaster > 0 ? ExtXbarNMaster : 32'd1;
-  localparam int unsigned ExtXbarNSlaveRnd = ExtXbarNSlave > 0 ? ExtXbarNSlave : 32'd1;
+  localparam int unsigned ExtXbarNSlave = 32'd0;
   localparam int unsigned LogExtXbarNMaster = ExtXbarNMaster > 32'd1 ? $clog2(
       ExtXbarNMaster
   ) : 32'd1;
   localparam int unsigned LogExtXbarNSlave = ExtXbarNSlave > 32'd1 ? $clog2(ExtXbarNSlave) : 32'd1;
-
-
-
-  // Memory map
-  // ----------
-  // SimpleCnt
-  localparam int unsigned SimpleCntIdx = 32'd0;
-  localparam logic [31:0] SimpleCntStartAddr = EXT_SLAVE_START_ADDRESS + 32'h0;
-  localparam logic [31:0] SimpleCntSize = 32'h65536;
-  localparam logic [31:0] SimpleCntEndAddr = SimpleCntStartAddr + 32'h65536;
-
-  // External slaves address map
-  localparam addr_map_rule_t [ExtXbarNSlave-1:0] ExtSlaveAddrRules = '{
-      '{idx: SimpleCntIdx, start_addr: SimpleCntStartAddr, end_addr: SimpleCntEndAddr}
-  };
-
-  localparam int unsigned ExtSlaveDefaultIdx = 32'd0;
 
 
   // --------------------
@@ -71,31 +52,11 @@ package gr_heep_pkg;
   // --------------------
 
   // Number of external peripherals
-  localparam int unsigned ExtPeriphNSlave = 32'd1;
-  localparam int unsigned LogExtPeriphNSlave = (ExtPeriphNSlave > 32'd1) ? $clog2(
+  localparam int unsigned ExtPeriphNSlave = 32'd0;
+  localparam int unsigned LogExtPeriphNSlave = ExtPeriphNSlave > 32'd1 ? $clog2(
       ExtPeriphNSlave
   ) : 32'd1;
-  localparam int unsigned ExtPeriphNSlaveRnd = (ExtPeriphNSlave > 32'd1) ? ExtPeriphNSlave : 32'd1;
 
-
-
-  // Memory map
-  // ----------
-  // SimpleCnt
-  localparam int unsigned SimpleCntIdx = 32'd0;
-  localparam logic [31:0] SimpleCntStartAddr = PERIPH_SLAVE_START_ADDRESS + 32'h0;
-  localparam logic [31:0] SimpleCntSize = 32'h4096;
-  localparam logic [31:0] SimpleCntEndAddr = SimpleCntStartAddr + 32'h4096;
-
-  // External peripherals address map
-  localparam addr_map_rule_t [ExtPeriphNSlave-1:0] ExtPeriphAddrRules = '{
-      '{idx: SimpleCntIdx, start_addr: SimpleCntStartAddr, end_addr: SimpleCntEndAddr}
-  };
-
-  localparam int unsigned ExtPeriphDefaultIdx = 32'd0;
-
-
-  localparam int unsigned ExtInterrupts = 32'd1;
 
 endpackage
 

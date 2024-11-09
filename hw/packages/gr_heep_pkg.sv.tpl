@@ -54,7 +54,7 @@ package gr_heep_pkg;
     // ----------
     // ${a_slave['name']}
     localparam int unsigned ${a_slave['name']}Idx = 32'd${a_slave['idx']};
-    localparam logic [31:0] ${a_slave['name']}StartAddr = EXT_SLAVE_START_ADDRESS + 32'h${a_slave['offset']};
+    localparam logic [31:0] ${a_slave['name']}StartAddr = EXT_SLAVE_START_ADDRESS + 32'h${a_slave['start_address']};
     localparam logic [31:0] ${a_slave['name']}Size = 32'h${a_slave['size']};
     localparam logic [31:0] ${a_slave['name']}EndAddr = ${a_slave['name']}StartAddr + 32'h${a_slave['size']};
 % endfor
@@ -80,8 +80,8 @@ package gr_heep_pkg;
 
   // Number of external peripherals
   localparam int unsigned ExtPeriphNSlave = 32'd${periph_nslaves};
-  localparam int unsigned LogExtPeriphNSlave = (ExtPeriphNSlave > 32'd1) ? $clog2(ExtPeriphNSlave) : 32'd1;
-  localparam int unsigned ExtPeriphNSlaveRnd = (ExtPeriphNSlave > 32'd1) ? ExtPeriphNSlave : 32'd1;
+  localparam int unsigned LogExtPeriphNSlave = ExtPeriphNSlave > 32'd1 ? $clog2(ExtPeriphNSlave) : 32'd1;
+  localparam int unsignes ExtPeriphNSlaveRnd = ExtPeriphNSlave > 0 ? ExtPeriphNSlave : 32'd1;
 
 % if (periph_nslaves > 0):
 
@@ -91,7 +91,7 @@ package gr_heep_pkg;
     // ----------
     // ${a_slave['name']}
     localparam int unsigned ${a_slave['name']}Idx = 32'd${a_slave['idx']};
-    localparam logic [31:0] ${a_slave['name']}StartAddr = PERIPH_SLAVE_START_ADDRESS + 32'h${a_slave['offset']};
+    localparam logic [31:0] ${a_slave['name']}StartAddr = PERIPH_SLAVE_START_ADDRESS + 32'h${a_slave['start_address']};
     localparam logic [31:0] ${a_slave['name']}Size = 32'h${a_slave['size']};
     localparam logic [31:0] ${a_slave['name']}EndAddr = ${a_slave['name']}StartAddr + 32'h${a_slave['size']};
 % endfor
