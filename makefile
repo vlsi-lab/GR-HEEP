@@ -230,6 +230,8 @@ $(PARAMS):
 ## @section Utilities
 
 ## Update vendor submodules
+## @note This target is used to update the vendor submodules
+## @param MODULE_NAME=module_name The name of the submodule to update
 .PHONY: update-vendor
 update-vendor:
 	$(PYTHON) util/vendor.py hw/vendor/$(MODULE_NAME).vendor.hjson -Uv

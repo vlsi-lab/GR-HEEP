@@ -185,8 +185,6 @@ def main():
     else:
         ext_interrupts = int(cfg["external_interrupts"])
 
-    print(ext_interrupts)
-
     # Explicit arguments
     kwargs = {
         "cpu_corev_pulp": int(cpu_features["corev_pulp"]),
