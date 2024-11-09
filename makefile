@@ -88,6 +88,10 @@ PARAMS = $(PROJECT)
 # Arch for the software build
 ARCH ?= rv32imc
 
+# ----- VARIABLES ----- #
+
+MODULE_NAME ?= x-heep
+
 # ----- BUILD RULES ----- #
 
 
@@ -224,6 +228,11 @@ $(PARAMS):
 	@echo "### Rebuilding software..."
 
 ## @section Utilities
+
+## Update vendor submodules
+.PHONY: update-vendor
+update-vendor:
+	$(PYTHON) util/vendor.py hw/vendor/$(MODULE_NAME).vendor.hjson -Uv
 
 ## Check if the firmware is compiled
 .PHONY: .check-firmware
