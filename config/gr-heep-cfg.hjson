@@ -18,23 +18,23 @@
 
     // Slaves memory map
     // ext_xbar_masters: 0,
-    ext_xbar_slaves: {
-        simple_cnt: {
-            offset:    "0x00000000",
-            length:    "0x00010000",
-        },
+    // ext_xbar_slaves: {
+    //     slave_0: {
+    //         offset:    "0x00000000",
+    //         length:    "0x00010000",
+    //     },
     //     slave_1: {
     //         offset:    "0x00010000",
     //         length:    "0x00010000",
     //     },
-    },
+    // },
 
     // External peripherals
-    ext_periph: {
-        simple_cnt: {
-            offset: "0x0000000",
-            length: "0x0001000",
-        },
+    // ext_periph: {
+    //     peripheral_0: {
+    //         offset: "0x0000000",
+    //         length: "0x0001000",
+    //     },
     //     peripheral_1: {
     //         offset: "0x00001000",
     //         length: "0x00001000",
@@ -43,11 +43,11 @@
     //         offset: "0x00002000",
     //         length: "0x00001000",
     //     },
-    },
+    // },
 
     // ao_spc_num: 1,
 
-    external_interrupts: 1,
+    // external_interrupts: 0,
 
 }
 
