@@ -226,7 +226,7 @@ verilator-waves: $(BUILD_DIR)/sim-common/waves.fst | .check-gtkwave
 
 ## gr-HEEP applications
 .PHONY: app
-app: $(GR_HEEP_GEN_LOCK) | $(BUILD_DIR)/sw/app/ $(SW_BUILD_DIR)/
+app: $(GR_HEEP_GEN_LOCK) | $(BUILD_DIR)/sw/app/
 ifneq ($(APP_MAKE),)
 	@echo "### Calling application-specific makefile '$(APP_MAKE)'..."
 	$(MAKE) -C $(dir $(APP_MAKE))
