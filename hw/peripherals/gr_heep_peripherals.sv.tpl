@@ -16,7 +16,11 @@
 
 module gr_heep_peripherals (
     input logic clk_i,
+% if (xbar_nmasters == 0 and xbar_nslaves == 0 and periph_nslaves == 0 and ext_interrupts == 0):
+    input logic rst_ni
+% else:
     input logic rst_ni,
+% endif
 
 % if (xbar_nmasters > 0):
     // External peripherals master ports

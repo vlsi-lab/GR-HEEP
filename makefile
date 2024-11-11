@@ -14,6 +14,7 @@
 # Global configuration
 ROOT_DIR			:= $(realpath .)
 BUILD_DIR 			:= build
+SW_BUILD_DIR		:= sw/build
 
 # FUSESOC and Python values (default)
 ifndef CONDA_DEFAULT_ENV
@@ -216,17 +217,23 @@ verilator-opt: | check-firmware .verilator-check-params
 		$(FUSESOC_ARGS)
 	cat $(FUSESOC_BUILD_DIR)/sim-verilator/uart.log
 
+# Open dumped waveform with GTKWave
+.PHONY: verilator-waves
+verilator-waves: $(BUILD_DIR)/sim-common/waves.fst | .check-gtkwave
+	gtkwave -a tb/misc/verilator-waves.gtkw $<
+
 ## @section Software
 
 ## gr-HEEP applications
 .PHONY: app
-app: $(GR_HEEP_GEN_LOCK) | $(BUILD_DIR)/sw/app/
+app: $(GR_HEEP_GEN_LOCK) | $(BUILD_DIR)/sw/app/ $(SW_BUILD_DIR)/
 ifneq ($(APP_MAKE),)
+	@echo "### Calling application-specific makefile '$(APP_MAKE)'..."
 	$(MAKE) -C $(dir $(APP_MAKE))
 endif
 	@echo "### Building application for SRAM execution with GCC compiler..."
 	CDEFS=$(CDEFS) $(MAKE) -f $(XHEEP_MAKE) $(MAKECMDGOALS) LINK_FOLDER=$(LINK_FOLDER) ARCH=$(ARCH)
-	find sw/build/ -maxdepth 1 -type f -name "main.*" -exec cp '{}' $(BUILD_DIR)/sw/app/ \;
+	find $(SW_BUILD_DIR)/ -maxdepth 1 -type f -name "main.*" -exec cp '{}' $(BUILD_DIR)/sw/app/ \;
 
 ## Dummy target to force software rebuild
 $(PARAMS):
@@ -260,6 +267,13 @@ check-firmware:
 .check-fusesoc:
 	@if [ ! `which fusesoc` ]; then \
 	printf -- "### ERROR: 'fusesoc' is not in PATH. Is the correct conda environment active?\n" >&2; \
+	exit 1; fi
+
+# Check if GTKWave is available
+.PHONY: .check-gtkwave
+.check-gtkwave:
+	@if [ ! `which gtkwave` ]; then \
+	printf -- "### ERROR: 'gtkwave' is not in PATH. Is the correct conda environment active?\n" >&2; \
 	exit 1; fi
 
 ## Check simulation parameters

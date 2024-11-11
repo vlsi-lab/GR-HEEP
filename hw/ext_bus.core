@@ -19,7 +19,6 @@ filesets:
     - openhwgroup.org:systems:core-v-mini-mcu
     - x-heep::packages
     - polito:gr_heep:packages
-    - polito:isa-lab:cnt:1.0.0
     files:
     - external-bus/ext_xbar.sv
     - external-bus/ext_bus.sv

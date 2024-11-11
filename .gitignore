@@ -8,6 +8,9 @@ hw/peripherals/gr_heep_peripherals.sv
 hw/packages/gr_heep_pkg.sv
 sw/external/lib/runtime/gr_heep.h
 
+# User-specific GTKWave waveform configuration
+tb/misc/verilator-waves.gtkw
+
 # Private files (i.e. for client-specific initialization scripts)
 private/
 
