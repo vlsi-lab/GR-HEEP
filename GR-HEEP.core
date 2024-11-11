@@ -11,7 +11,7 @@ CAPI=2:
 # ATTENTION: This file is just a template. It is not meant to be used as it is.
 #            Please replace all references to "GR-HEEP" with the name of your project.
 
-name: polito:gr_heep:gr_heep:0.1.2
+name: polito:gr_heep:gr_heep:0.1.3
 description: Top-level file for GR-HEEP
 
 filesets:
@@ -107,7 +107,7 @@ scripts:
     cmd: ["mkdir", "-p", "../../sim-common"]
 
   copy_waves:
-    cmd: ["ln", "-sr", "logs/waves.fst", "../../sim-common/waves.fst"]
+    cmd: ["ln", "-srf", "logs/waves.fst", "../../sim-common/waves.fst"]
 
 targets:
   default: &default
