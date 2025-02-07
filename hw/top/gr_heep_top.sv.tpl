@@ -5,7 +5,7 @@
 // File: gr_heep_top.sv
 // Author: Luigi Giuffrida
 // Date: 16/10/2024
-// Description: GR-heep top-level module
+// Description: tr-HEEP top-level module
 
 module gr_heep_top (
     // X-HEEP interface
@@ -99,24 +99,7 @@ ${pad.x_heep_system_interface}
   logic ext_debug_req;
   logic ext_debug_reset_n;
 
-  // Tie the CV-X-IF coprocessor signals to a default value that will
-  // receive petitions but reject all offloaded instructions
-  // CV-X-IF is unused in core-v-mini-mcu as it has the cv32e40p CPU
-  if_xif #() ext_xif ();
-
-  initial begin
-    ext_xif.compressed_ready   = 1'b1;
-    ext_xif.compressed_resp    = '0;
-
-    ext_xif.issue_ready        = 1'b1;
-    ext_xif.issue_resp         = '0;
-
-    ext_xif.mem_valid          = 1'b0;
-    ext_xif.mem_req            = '0;
-
-    ext_xif.result_valid       = 1'b0;
-    ext_xif.result             = '0;
-  end
+  if_xif #(.X_NUM_RS(3)) ext_xif ();
 
   // CORE-V-MINI-MCU input/output pins
 % for pad in total_pad_list:
@@ -166,12 +149,6 @@ ${pad.internal_signals}
 % for pad in pad_list:
 ${pad.core_v_mini_mcu_bonding}
 % endfor
-
-`ifdef FPGA
-    .spi_flash_cs_1_o (),
-    .spi_flash_cs_1_i ('0),
-    .spi_flash_cs_1_oe_o(),
-`endif
 
     // CORE-V eXtension Interface
     .xif_compressed_if (ext_xif.cpu_compressed),
@@ -244,18 +221,6 @@ ${pad.core_v_mini_mcu_bonding}
 
   assign cpu_subsystem_powergate_switch_ack_n = cpu_subsystem_powergate_switch_n;
   assign peripheral_subsystem_powergate_switch_ack_n = peripheral_subsystem_powergate_switch_n;
-
-
-  // External peripherals
-  // --------------------
-
-
-  // External peripherals bus
-  // ------------------------
-
-
-  // External interrupts
-  // -------------------
 
   assign ext_int_vector = '0;
 

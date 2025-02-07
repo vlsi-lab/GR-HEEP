@@ -1,14 +1,11 @@
-# Copyright 2024 Politecnico di Torino.
-# Solderpad Hardware License, Version 2.1, see LICENSE.md for details.
-# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-#
-# File: mcu-gen.hjson
-# Author: Luigi Giuffrida
-# Date: 03/10/2024
-# Description: CORE-V-MINI-MCU configuration for gr-HEEP
-
+// Copyright 2020 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Derived from Occamy: https://github.com/pulp-platform/snitch/blob/master/hw/system/occamy/src/occamy_cfg.hjson
+// Peripherals configuration for core-v-mini-mcu.
 {
-    cpu_type: cv32e20
+
+    cpu_type: cv32e40px
 
     linker_script: {
         stack_size: 0x800,
@@ -40,7 +37,7 @@
             offset:  0x00028000,
             length:  0x00008000,
         },
-         dma: {
+        dma: {
             offset:  0x00030000,
             length:  0x00010000,
             ch_length:    0x100,
@@ -106,7 +103,7 @@
         i2c: {
             offset:  0x00030000,
             length:  0x00010000,
-            is_included: "no",
+            is_included: "yes",
             path:    "./hw/vendor/lowrisc_opentitan/hw/ip/i2c/data/i2c.hjson"
         },
         rv_timer: {
@@ -118,7 +115,7 @@
         spi2: {
             offset:  0x00050000,
             length:  0x00010000,
-            is_included: "no",
+            is_included: "yes",
         },
         pdm2pcm: {
             offset:  0x00060000,
@@ -132,6 +129,7 @@
             is_included: "yes",
             path:    "./hw/ip/i2s/data/i2s.hjson"
         },
+
     },
 
     flash_mem: {

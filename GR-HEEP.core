@@ -124,7 +124,7 @@ targets:
     - rtl
     - rtl-x-heep
     toplevel: gr_heep_top
-  
+
   # FPGA synthesis
   pynq-z2:
     <<: *default
@@ -133,7 +133,7 @@ targets:
     filesets_append:
     - rtl-fpga
     parameters:
-    - SYNTHESIS=true  
+    - SYNTHESIS=true
     - FPGA_SYNTHESIS=true
     - FPGA=true
     tools:
@@ -141,7 +141,7 @@ targets:
         part: xc7z020clg400-1
         board_part: tul.com.tw:pynq-z2:part0:1.0
         board_repo_paths: [../../../hw/vendor/x-heep/hw/fpga/board_files/vendor/esl_epfl_pynq_z2_board_files]
-    toplevel: [xilinx_tr_heep_wrapper]
+    toplevel: [xilinx_gr_heep_wrapper]
 
 
   # RTL simulation
