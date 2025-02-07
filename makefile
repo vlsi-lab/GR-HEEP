@@ -67,7 +67,6 @@ VCD_MODE			?= 0 # QuestaSim-only - 0: no dumo, 1: dump always active, 2: dump tr
 MAX_CYCLES			?= 1200000
 FUSESOC_FLAGS		?=
 FUSESOC_ARGS		?=
-FUSESOC_ARGS		+= --VERILATOR_VERSION=$(VERILATOR_VERSION)
 
 # Flash file
 FLASHWRITE_FILE		?= $(FIRMWARE)
@@ -171,6 +170,21 @@ $(GR_HEEP_GEN_LOCK): $(GR_HEEP_GEN_CFG) $(GR_HEEP_TOP_TPL) $(MCU_GEN_LOCK)
 	@echo "### DONE! gr-HEEP files generated successfully"
 	touch $@
 
+## @section synthesis
+
+## @subsection FPGA synthesis
+
+## Synthesize GR-HEEP vith Vivado
+## @param TARGET=pynq-z2 The target board for the synthesis
+.PHONY: vivado-fpga-synth
+vivado-fpga-synth: $(GR_HEEP_GEN_LOCK)
+	$(FUSESOC) run --no-export --target $(TARGET) --tool vivado --build $(FUSESOC_FLAGS) polito:gr_heep:gr_heep \
+		$(FUSESOC_ARGS)
+
+.PHONY: vivado-fpga-pgm
+vivado-fpga-pgm:
+	$(MAKE) -C $(FUSESOC_BUILD_DIR)/$(TARGET)-vivado pgm
+
 ## @section Simulation
 
 ## @subsection Verilator RTL simulation
@@ -221,6 +235,24 @@ verilator-opt: | check-firmware .verilator-check-params
 .PHONY: verilator-waves
 verilator-waves: $(BUILD_DIR)/sim-common/waves.fst | .check-gtkwave
 	gtkwave -a tb/misc/verilator-waves.gtkw $<
+
+## @section FPGA debug
+
+## Launch openocd for debugging with xilinx scanchains
+.PHONY: openocd-bscan
+openocd-bscan: $(GR_HEEP_GEN_LOCK)
+	openocd -f $(XHEEP_DIR)/tb/core-v-mini-mcu-pynq-z2-bscan.cfg
+
+
+## Launch openocd for debugging with epfl programmer
+.PHONY: openocd-epfl-programmer
+openocd-epfl-programmer: $(GR_HEEP_GEN_LOCK)
+	openocd -f $(XHEEP_DIR)/tb/core-v-mini-mcu-pynq-z2-esl-programmer.cfg
+
+## Launch GDB sourcing the debug script
+.PHONY: gdb
+gdb: $(GR_HEEP_GEN_LOCK)
+	$(RISCV)/bin/$(COMPILER-PREFIX)elf-gdb -x tb/misc/debug.gdb $(FIRMWARE_EXE)
 
 ## @section Software
 

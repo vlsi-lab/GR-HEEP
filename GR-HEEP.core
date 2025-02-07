@@ -42,6 +42,15 @@ filesets:
     - x-heep::packages
     - x-heep:ip:pad_control
 
+  # The fileset containing the RTL files for FPGA synthesis
+  rtl-fpga:
+    depend:
+    - openhwgroup.org:systems:core-v-mini-mcu-fpga
+    - polito:gr_heep:packages
+    files:
+    - hw/fpga/xilinx_gr_heep_wrapper.sv
+    file_type: systemVerilogSource
+
   # RTL testbench system
   tb-system:
     files:
@@ -116,6 +125,25 @@ targets:
     - rtl-x-heep
     toplevel: gr_heep_top
   
+  # FPGA synthesis
+  pynq-z2:
+    <<: *default
+    default_tool: vivado
+    description: TUL Pynq-Z2 Board
+    filesets_append:
+    - rtl-fpga
+    parameters:
+    - SYNTHESIS=true  
+    - FPGA_SYNTHESIS=true
+    - FPGA=true
+    tools:
+      vivado:
+        part: xc7z020clg400-1
+        board_part: tul.com.tw:pynq-z2:part0:1.0
+        board_repo_paths: [../../../hw/vendor/x-heep/hw/fpga/board_files/vendor/esl_epfl_pynq_z2_board_files]
+    toplevel: [xilinx_tr_heep_wrapper]
+
+
   # RTL simulation
   sim: &sim
     <<: *default
@@ -274,3 +302,15 @@ parameters:
     datatype: int
     paramtype: vlogdefine
     default: 4
+  FPGA:
+    datatype: bool
+    paramtype: vlogdefine
+    default: false
+  FPGA_SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+    default: false
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+    default: false
