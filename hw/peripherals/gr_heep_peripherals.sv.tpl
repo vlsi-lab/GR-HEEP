@@ -1,4 +1,4 @@
-// Copyright 2024 Politecnico di Torino.
+// Copyright 2024 Politecnico di Torino and EPFL
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 2.0 (the "License"); you may not use this file except in
 // compliance with the License. You may obtain a copy of the License at
@@ -11,40 +11,40 @@
 // File: gr_heep_peripherals.sv
 // Author(s):
 //   Luigi Giuffrida
+//   David Mallasén
 // Date: 08/11/2024
 // Description: Template for the GR-heep peripherals module
 
 module gr_heep_peripherals (
     input logic clk_i,
-% if (xbar_nmasters == 0 and xbar_nslaves == 0 and periph_nslaves == 0 and ext_interrupts == 0):
-    input logic rst_ni
-% else:
     input logic rst_ni,
-% endif
 
-% if (xbar_nmasters > 0):
+    /* verilator lint_off UNUSED */
+
     // External peripherals master ports
     output obi_pkg::obi_req_t  [gr_heep_pkg::ExtXbarNMasterRnd-1:0] gr_heep_master_req_o,
-    input obi_pkg::obi_resp_t [gr_heep_pkg::ExtXbarNMasterRnd-1:0] gr_heep_master_resp_i${'' if (xbar_nslave + periph_nslaves + ext_interrupts == 0) else ','}
-% endif
+    input obi_pkg::obi_resp_t [gr_heep_pkg::ExtXbarNMasterRnd-1:0] gr_heep_master_resp_i,
 
-% if (xbar_nslaves > 0):
     // External peripherals slave ports
     input obi_pkg::obi_req_t  [gr_heep_pkg::ExtXbarNSlaveRnd-1:0] gr_heep_slave_req_i,
-    output obi_pkg::obi_resp_t [gr_heep_pkg::ExtXbarNSlaveRnd-1:0] gr_heep_slave_resp_o${'' if (periph_nslaves + ext_interrupts == 0) else ','}
-% endif
+    output obi_pkg::obi_resp_t [gr_heep_pkg::ExtXbarNSlaveRnd-1:0] gr_heep_slave_resp_o,
 
-% if (periph_nslaves > 0):
     // External peripherals configuration ports
     input reg_pkg::reg_req_t [gr_heep_pkg::ExtPeriphNSlaveRnd-1:0] gr_heep_peripheral_req_i,
-    output reg_pkg::reg_rsp_t [gr_heep_pkg::ExtPeriphNSlaveRnd-1:0] gr_heep_peripheral_rsp_o${'' if (ext_interrupts == 0) else ','}
-% endif
+    output reg_pkg::reg_rsp_t [gr_heep_pkg::ExtPeriphNSlaveRnd-1:0] gr_heep_peripheral_rsp_o,
 
-% if (ext_interrupts > 0):
+    /* verilator lint_on UNUSED */
+
     // External peripherals interrupt ports
     output logic [gr_heep_pkg::ExtInterrupts-1:0] gr_heep_peripheral_int_o
-%endif
 );
+
+  // Assign default values to the output signals. To be modified if the
+  // peripherals are instantiated.
+  assign gr_heep_master_req_o = '0;
+  assign gr_heep_slave_resp_o = '0;
+  assign gr_heep_peripheral_rsp_o = '0;
+  assign gr_heep_peripheral_int_o = '0;
 
   // Instantiate here the external peripherals
 
