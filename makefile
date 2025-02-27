@@ -67,7 +67,6 @@ VCD_MODE			?= 0 # QuestaSim-only - 0: no dumo, 1: dump always active, 2: dump tr
 MAX_CYCLES			?= 1200000
 FUSESOC_FLAGS		?=
 FUSESOC_ARGS		?=
-FUSESOC_ARGS		+= --VERILATOR_VERSION=$(VERILATOR_VERSION)
 
 # Flash file
 FLASHWRITE_FILE		?= $(FIRMWARE)
@@ -217,7 +216,7 @@ verilator-opt: | check-firmware .verilator-check-params
 		$(FUSESOC_ARGS)
 	cat $(FUSESOC_BUILD_DIR)/sim-verilator/uart.log
 
-# Open dumped waveform with GTKWave
+## Open dumped waveform with GTKWave
 .PHONY: verilator-waves
 verilator-waves: $(BUILD_DIR)/sim-common/waves.fst | .check-gtkwave
 	gtkwave -a tb/misc/verilator-waves.gtkw $<

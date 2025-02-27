@@ -1,9 +1,11 @@
-// Copyright 2024 Politecnico di Torino.
+// Copyright 2024 Politecnico di Torino and EPFL
 // Solderpad Hardware License, Version 2.1, see LICENSE.md for details.
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
 // File: gr_heep_top.sv
-// Author: Luigi Giuffrida
+// Author(s):
+//   Luigi Giuffrida
+//   David Mallasén (david.mallasen@epfl.ch)
 // Date: 16/10/2024
 // Description: GR-HEEP top-level module
 
@@ -107,24 +109,7 @@ ${pad.x_heep_system_interface}
   logic ext_debug_req;
   logic ext_debug_reset_n;
 
-  // Tie the CV-X-IF coprocessor signals to a default value that will
-  // receive petitions but reject all offloaded instructions
-  // CV-X-IF is unused in core-v-mini-mcu as it has the cv32e40p CPU
-  if_xif #() ext_xif ();
-
-  initial begin
-    ext_xif.compressed_ready   = 1'b1;
-    ext_xif.compressed_resp    = '0;
-
-    ext_xif.issue_ready        = 1'b1;
-    ext_xif.issue_resp         = '0;
-
-    ext_xif.mem_valid          = 1'b0;
-    ext_xif.mem_req            = '0;
-
-    ext_xif.result_valid       = 1'b0;
-    ext_xif.result             = '0;
-  end
+  if_xif #(.X_NUM_RS(3)) ext_xif ();
 
   // CORE-V-MINI-MCU input/output pins
 % for pad in total_pad_list:

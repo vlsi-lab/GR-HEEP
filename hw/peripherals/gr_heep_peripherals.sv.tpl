@@ -11,7 +11,7 @@
 // File: gr_heep_peripherals.sv
 // Author(s):
 //   Luigi Giuffrida
-//   David Mallasén
+//   David Mallasén (david.mallasen@epfl.ch)
 // Date: 08/11/2024
 // Description: Template for the GR-heep peripherals module
 

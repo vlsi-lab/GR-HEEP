@@ -7,6 +7,7 @@ hw/pad-ring/pad_ring.sv
 hw/peripherals/gr_heep_peripherals.sv
 hw/packages/gr_heep_pkg.sv
 sw/external/lib/runtime/gr_heep.h
+tb/tb_util.svh
 
 # User-specific GTKWave waveform configuration
 tb/misc/verilator-waves.gtkw

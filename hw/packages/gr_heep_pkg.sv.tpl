@@ -1,9 +1,11 @@
-// Copyright 2024 Politecnico di Torino.
+// Copyright 2024 Politecnico di Torino and EPFL
 // Solderpad Hardware License, Version 2.1, see LICENSE.md for details.
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
 // File: gr_heep_pkg.sv
-// Author: Luigi Giuffrida
+// Author(s):
+//   Luigi Giuffrida
+//   David Mallasén (david.mallasen@epfl.ch)
 // Date: 16/10/2024
 // Description: GR-HEEP pkg
 
@@ -47,9 +49,7 @@ package gr_heep_pkg;
   localparam int unsigned LogExtXbarNSlave = ExtXbarNSlave > 32'd1 ? $clog2(ExtXbarNSlave) : 32'd1;
 
 % if (xbar_nslaves > 0):
-
-% for a_slave in slaves:
-
+  % for a_slave in slaves:
     // Memory map
     // ----------
     // ${a_slave['name']}
@@ -57,22 +57,24 @@ package gr_heep_pkg;
     localparam logic [31:0] ${a_slave['name']}StartAddr = EXT_SLAVE_START_ADDRESS + 32'h${a_slave['offset']};
     localparam logic [31:0] ${a_slave['name']}Size = 32'h${a_slave['size']};
     localparam logic [31:0] ${a_slave['name']}EndAddr = ${a_slave['name']}StartAddr + 32'h${a_slave['size']};
-% endfor
+  % endfor
 
-    // External slaves address map
-    localparam addr_map_rule_t [ExtXbarNSlave-1:0] ExtSlaveAddrRules = '{
-% for slave_idx, a_slave in enumerate(slaves):
-% if (slave_idx < len(slaves)-1):
-      '{idx: ${a_slave['name']}Idx, start_addr: ${a_slave['name']}StartAddr, end_addr: ${a_slave['name']}EndAddr},
+  // External slaves address map
+  localparam addr_map_rule_t [ExtXbarNSlave-1:0] ExtSlaveAddrRules = '{
+    % for slave_idx, a_slave in enumerate(slaves):
+      % if (slave_idx < len(slaves)-1):
+            '{idx: ${a_slave['name']}Idx, start_addr: ${a_slave['name']}StartAddr, end_addr: ${a_slave['name']}EndAddr},
+      % else:
+            '{idx: ${a_slave['name']}Idx, start_addr: ${a_slave['name']}StartAddr, end_addr: ${a_slave['name']}EndAddr}
+      %endif
+    %endfor
+  };
 % else:
-      '{idx: ${a_slave['name']}Idx, start_addr: ${a_slave['name']}StartAddr, end_addr: ${a_slave['name']}EndAddr}
-%endif
-%endfor
-    };
+  // Default external slave address map when there are no slaves
+  localparam addr_map_rule_t [0:0] ExtSlaveAddrRules = '{'{idx: 32'd0, start_addr: 32'h0, end_addr: 32'h0}};
+% endif
 
   localparam int unsigned ExtSlaveDefaultIdx = 32'd0;
-
-% endif
   
   // --------------------
   // EXTERNAL PERIPHERALS
@@ -84,9 +86,7 @@ package gr_heep_pkg;
   localparam int unsigned ExtPeriphNSlaveRnd = (ExtPeriphNSlave > 32'd1) ? ExtPeriphNSlave : 32'd1;
 
 % if (periph_nslaves > 0):
-
-% for a_slave in peripherals:
-
+  % for a_slave in peripherals:
     // Memory map
     // ----------
     // ${a_slave['name']}
@@ -94,24 +94,25 @@ package gr_heep_pkg;
     localparam logic [31:0] ${a_slave['name']}PeriphStartAddr = EXT_PERIPHERAL_START_ADDRESS + 32'h${a_slave['offset']};
     localparam logic [31:0] ${a_slave['name']}PeriphSize = 32'h${a_slave['size']};
     localparam logic [31:0] ${a_slave['name']}PeriphEndAddr = ${a_slave['name']}StartAddr + 32'h${a_slave['size']};
-% endfor
-    
-        // External peripherals address map
-        localparam addr_map_rule_t [ExtPeriphNSlave-1:0] ExtPeriphAddrRules = '{
-% for slave_idx, a_slave in enumerate(peripherals):
-% if (slave_idx < len(peripherals)-1):
-          '{idx: ${a_slave['name']}PeriphIdx, start_addr: ${a_slave['name']}PeriphStartAddr, end_addr: ${a_slave['name']}PeriphEndAddr},
+  % endfor
+
+  // External peripherals address map
+  localparam addr_map_rule_t [ExtPeriphNSlave-1:0] ExtPeriphAddrRules = '{
+    % for slave_idx, a_slave in enumerate(peripherals):
+      % if (slave_idx < len(peripherals)-1):
+                '{idx: ${a_slave['name']}PeriphIdx, start_addr: ${a_slave['name']}PeriphStartAddr, end_addr: ${a_slave['name']}PeriphEndAddr},
+      % else:
+                '{idx: ${a_slave['name']}PeriphIdx, start_addr: ${a_slave['name']}PeriphStartAddr, end_addr: ${a_slave['name']}PeriphEndAddr}
+      %endif
+    %endfor
+  };
 % else:
-            '{idx: ${a_slave['name']}PeriphIdx, start_addr: ${a_slave['name']}PeriphStartAddr, end_addr: ${a_slave['name']}PeriphEndAddr}
-%endif
-%endfor
-        };
+  // Default address map when there are no external peripherals
+  localparam addr_map_rule_t [0:0] ExtPeriphAddrRules = '{'{idx: 32'd0, start_addr: 32'h0, end_addr: 32'h0}};
+% endif
 
   localparam int unsigned ExtPeriphDefaultIdx = 32'd0;
-
-% endif
 
   localparam int unsigned ExtInterrupts = 32'd${ext_interrupts};
 
 endpackage
-
