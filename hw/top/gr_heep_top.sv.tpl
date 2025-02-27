@@ -238,6 +238,8 @@ ${pad.core_v_mini_mcu_bonding}
   assign cpu_subsystem_powergate_switch_ack_n = cpu_subsystem_powergate_switch_n;
   assign peripheral_subsystem_powergate_switch_ack_n = peripheral_subsystem_powergate_switch_n;
 
+  assign ext_int_vector[core_v_mini_mcu_pkg::NEXT_INT-1:gr_heep_pkg::ExtInterruptsRnd] = '0;
+
   // External peripherals
   // --------------------
   gr_heep_peripherals u_gr_heep_peripherals (
@@ -249,7 +251,7 @@ ${pad.core_v_mini_mcu_bonding}
     .gr_heep_slave_resp_o(ext_slave_resp),
     .gr_heep_peripheral_req_i(gr_heep_peripheral_req),
     .gr_heep_peripheral_rsp_o(gr_heep_peripheral_rsp),
-    .gr_heep_peripheral_int_o(ext_int_vector)
+    .gr_heep_peripheral_int_o(ext_int_vector[gr_heep_pkg::ExtInterruptsRnd-1:0])
   );
 
   // External BUS

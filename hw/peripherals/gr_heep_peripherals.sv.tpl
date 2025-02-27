@@ -16,10 +16,10 @@
 // Description: Template for the GR-heep peripherals module
 
 module gr_heep_peripherals (
+    /* verilator lint_off UNUSED */
+
     input logic clk_i,
     input logic rst_ni,
-
-    /* verilator lint_off UNUSED */
 
     // External peripherals master ports
     output obi_pkg::obi_req_t  [gr_heep_pkg::ExtXbarNMasterRnd-1:0] gr_heep_master_req_o,
@@ -36,7 +36,7 @@ module gr_heep_peripherals (
     /* verilator lint_on UNUSED */
 
     // External peripherals interrupt ports
-    output logic [gr_heep_pkg::ExtInterrupts-1:0] gr_heep_peripheral_int_o
+    output logic [gr_heep_pkg::ExtInterruptsRnd-1:0] gr_heep_peripheral_int_o
 );
 
   // Assign default values to the output signals. To be modified if the

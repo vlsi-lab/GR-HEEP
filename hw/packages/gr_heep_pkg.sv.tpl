@@ -114,5 +114,6 @@ package gr_heep_pkg;
   localparam int unsigned ExtPeriphDefaultIdx = 32'd0;
 
   localparam int unsigned ExtInterrupts = 32'd${ext_interrupts};
+  localparam int unsigned ExtInterruptsRnd = (ExtInterrupts > 32'd1) ? ExtInterrupts : 32'd1;
 
 endpackage
