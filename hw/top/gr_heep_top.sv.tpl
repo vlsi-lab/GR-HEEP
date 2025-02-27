@@ -238,6 +238,7 @@ ${pad.core_v_mini_mcu_bonding}
   assign cpu_subsystem_powergate_switch_ack_n = cpu_subsystem_powergate_switch_n;
   assign peripheral_subsystem_powergate_switch_ack_n = peripheral_subsystem_powergate_switch_n;
 
+  // Default assignment to 0. To be modified if interrupts are used.
   assign ext_int_vector[core_v_mini_mcu_pkg::NEXT_INT-1:gr_heep_pkg::ExtInterruptsRnd] = '0;
 
   // External peripherals
