@@ -27,5 +27,8 @@ LinkerConfiguration
 PadConfiguration
 PeripheralConfiguration
 ExtensionConfiguration
+AddressMap
+DebugSS
+Interrupts
 
 xheep_gen/index

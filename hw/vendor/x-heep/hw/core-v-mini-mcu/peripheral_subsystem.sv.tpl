@@ -1,17 +1,20 @@
-// Copyright(// Copyright) 2022 OpenHW Group
+// Copyright 2022 OpenHW Group
 // Solderpad Hardware License, Version 2.1, see LICENSE.md for details.
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
 <%
   user_peripheral_domain = xheep.get_user_peripheral_domain()
+  interrupts = xheep.get_interrupts()
 %>
 
-module peripheral_subsystem
-  import obi_pkg::*;
-  import reg_pkg::*;
-#(
+module peripheral_subsystem #(
     //do not touch these parameters
-    parameter NEXT_INT_RND         = core_v_mini_mcu_pkg::NEXT_INT == 0 ? 1 : core_v_mini_mcu_pkg::NEXT_INT
+    parameter NEXT_INT_RND         = core_v_mini_mcu_pkg::NEXT_INT == 0 ? 1 : core_v_mini_mcu_pkg::NEXT_INT,
+    // OBI and Register Interface data types
+    parameter type obi_req_t = xheep_obi_pkg::xheep_obi_req_t,
+    parameter type obi_rsp_t = xheep_obi_pkg::xheep_obi_rsp_t,
+    parameter type reg_req_t = xheep_reg_pkg::xheep_reg_req_t,
+    parameter type reg_rsp_t = xheep_reg_pkg::xheep_reg_rsp_t
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -19,8 +22,8 @@ module peripheral_subsystem
     // Clock-gating signal
     input logic clk_gate_en_ni,
 
-    input  obi_req_t  slave_req_i,
-    output obi_resp_t slave_resp_o,
+    input  obi_req_t slave_req_i,
+    output obi_rsp_t slave_resp_o,
 
     //PLIC
     input  logic [NEXT_INT_RND-1:0] intr_vector_ext_i,
@@ -95,7 +98,12 @@ module peripheral_subsystem
     output logic ddr_snd_1_o,
     output logic ddr_snd_2_o,
     output logic ddr_snd_3_o,
-    
+    % if user_peripheral_domain.contains_peripheral('serial_link_reg'):
+      output obi_req_t serial_link_direct_write_req_o,
+      input  obi_rsp_t serial_link_direct_write_resp_i,
+      input  obi_req_t serial_link_slave_req_i,
+      output obi_rsp_t serial_link_slave_resp_o,
+    % endif
 
     // PDM2PCM Interface
     output logic pdm2pcm_clk_o,
@@ -107,11 +115,11 @@ module peripheral_subsystem
   import tlul_pkg::*;
   import rv_plic_reg_pkg::*;
 
-  reg_pkg::reg_req_t peripheral_req;
-  reg_pkg::reg_rsp_t peripheral_rsp;
+  reg_req_t peripheral_req;
+  reg_rsp_t peripheral_rsp;
 
-  reg_pkg::reg_req_t [core_v_mini_mcu_pkg::PERIPHERALS_RND-1:0] peripheral_slv_req;
-  reg_pkg::reg_rsp_t [core_v_mini_mcu_pkg::PERIPHERALS_RND-1:0] peripheral_slv_rsp;
+  reg_req_t [core_v_mini_mcu_pkg::PERIPHERALS_RND-1:0] peripheral_slv_req;
+  reg_rsp_t [core_v_mini_mcu_pkg::PERIPHERALS_RND-1:0] peripheral_slv_rsp;
 
   tlul_pkg::tl_h2d_t plic_tl_h2d;
   tlul_pkg::tl_d2h_t plic_tl_d2h;
@@ -166,35 +174,35 @@ module peripheral_subsystem
   assign unused_irq_id = irq_id;
 
   // Assign internal interrupts
-  assign intr_vector[${interrupts["null_intr"]}] = 1'b0;  // ID [0] is a special case and must be tied to zero.
-  assign intr_vector[${interrupts["uart_intr_tx_watermark"]}] = uart_intr_tx_watermark;
-  assign intr_vector[${interrupts["uart_intr_rx_watermark"]}] = uart_intr_rx_watermark;
-  assign intr_vector[${interrupts["uart_intr_tx_empty"]}] = uart_intr_tx_empty;
-  assign intr_vector[${interrupts["uart_intr_rx_overflow"]}] = uart_intr_rx_overflow;
-  assign intr_vector[${interrupts["uart_intr_rx_frame_err"]}] = uart_intr_rx_frame_err;
-  assign intr_vector[${interrupts["uart_intr_rx_break_err"]}] = uart_intr_rx_break_err;
-  assign intr_vector[${interrupts["uart_intr_rx_timeout"]}] = uart_intr_rx_timeout;
-  assign intr_vector[${interrupts["uart_intr_rx_parity_err"]}] = uart_intr_rx_parity_err;
-  assign intr_vector[${interrupts["gpio_intr_31"]}:${interrupts["gpio_intr_8"]}] = gpio_intr;
-  assign intr_vector[${interrupts["intr_fmt_watermark"]}] = i2c_intr_fmt_watermark;
-  assign intr_vector[${interrupts["intr_rx_watermark"]}] = i2c_intr_rx_watermark;
-  assign intr_vector[${interrupts["intr_fmt_overflow"]}] = i2c_intr_fmt_overflow;
-  assign intr_vector[${interrupts["intr_rx_overflow"]}] = i2c_intr_rx_overflow;
-  assign intr_vector[${interrupts["intr_nak"]}] = i2c_intr_nak;
-  assign intr_vector[${interrupts["intr_scl_interference"]}] = i2c_intr_scl_interference;
-  assign intr_vector[${interrupts["intr_sda_interference"]}] = i2c_intr_sda_interference;
-  assign intr_vector[${interrupts["intr_stretch_timeout"]}] = i2c_intr_stretch_timeout;
-  assign intr_vector[${interrupts["intr_sda_unstable"]}] = i2c_intr_sda_unstable;
-  assign intr_vector[${interrupts["intr_trans_complete"]}] = i2c_intr_trans_complete;
-  assign intr_vector[${interrupts["intr_tx_empty"]}] = i2c_intr_tx_empty;
-  assign intr_vector[${interrupts["intr_tx_nonempty"]}] = i2c_intr_tx_nonempty;
-  assign intr_vector[${interrupts["intr_tx_overflow"]}] = i2c_intr_tx_overflow;
-  assign intr_vector[${interrupts["intr_acq_overflow"]}] = i2c_intr_acq_overflow;
-  assign intr_vector[${interrupts["intr_ack_stop"]}] = i2c_intr_ack_stop;
-  assign intr_vector[${interrupts["intr_host_timeout"]}] = i2c_intr_host_timeout;
-  assign intr_vector[${interrupts["spi2_intr_event"]}] = spi2_intr_event;
-  assign intr_vector[${interrupts["i2s_intr_event"]}] = i2s_intr_event;
-  assign intr_vector[${interrupts["w25q128jw_controller_intr_event"]}] = w25q128jw_controller_intr_i;
+  assign intr_vector[${interrupts.get_interrupt("null_intr")}] = 1'b0;  // ID [0] is a special case and must be tied to zero.
+  assign intr_vector[${interrupts.get_interrupt("uart_intr_tx_watermark")}] = uart_intr_tx_watermark;
+  assign intr_vector[${interrupts.get_interrupt("uart_intr_rx_watermark")}] = uart_intr_rx_watermark;
+  assign intr_vector[${interrupts.get_interrupt("uart_intr_tx_empty")}] = uart_intr_tx_empty;
+  assign intr_vector[${interrupts.get_interrupt("uart_intr_rx_overflow")}] = uart_intr_rx_overflow;
+  assign intr_vector[${interrupts.get_interrupt("uart_intr_rx_frame_err")}] = uart_intr_rx_frame_err;
+  assign intr_vector[${interrupts.get_interrupt("uart_intr_rx_break_err")}] = uart_intr_rx_break_err;
+  assign intr_vector[${interrupts.get_interrupt("uart_intr_rx_timeout")}] = uart_intr_rx_timeout;
+  assign intr_vector[${interrupts.get_interrupt("uart_intr_rx_parity_err")}] = uart_intr_rx_parity_err;
+  assign intr_vector[${interrupts.get_interrupt("gpio_intr_31")}:${interrupts.get_interrupt("gpio_intr_8")}] = gpio_intr;
+  assign intr_vector[${interrupts.get_interrupt("intr_fmt_watermark")}] = i2c_intr_fmt_watermark;
+  assign intr_vector[${interrupts.get_interrupt("intr_rx_watermark")}] = i2c_intr_rx_watermark;
+  assign intr_vector[${interrupts.get_interrupt("intr_fmt_overflow")}] = i2c_intr_fmt_overflow;
+  assign intr_vector[${interrupts.get_interrupt("intr_rx_overflow")}] = i2c_intr_rx_overflow;
+  assign intr_vector[${interrupts.get_interrupt("intr_nak")}] = i2c_intr_nak;
+  assign intr_vector[${interrupts.get_interrupt("intr_scl_interference")}] = i2c_intr_scl_interference;
+  assign intr_vector[${interrupts.get_interrupt("intr_sda_interference")}] = i2c_intr_sda_interference;
+  assign intr_vector[${interrupts.get_interrupt("intr_stretch_timeout")}] = i2c_intr_stretch_timeout;
+  assign intr_vector[${interrupts.get_interrupt("intr_sda_unstable")}] = i2c_intr_sda_unstable;
+  assign intr_vector[${interrupts.get_interrupt("intr_trans_complete")}] = i2c_intr_trans_complete;
+  assign intr_vector[${interrupts.get_interrupt("intr_tx_empty")}] = i2c_intr_tx_empty;
+  assign intr_vector[${interrupts.get_interrupt("intr_tx_nonempty")}] = i2c_intr_tx_nonempty;
+  assign intr_vector[${interrupts.get_interrupt("intr_tx_overflow")}] = i2c_intr_tx_overflow;
+  assign intr_vector[${interrupts.get_interrupt("intr_acq_overflow")}] = i2c_intr_acq_overflow;
+  assign intr_vector[${interrupts.get_interrupt("intr_ack_stop")}] = i2c_intr_ack_stop;
+  assign intr_vector[${interrupts.get_interrupt("intr_host_timeout")}] = i2c_intr_host_timeout;
+  assign intr_vector[${interrupts.get_interrupt("spi2_intr_event")}] = spi2_intr_event;
+  assign intr_vector[${interrupts.get_interrupt("i2s_intr_event")}] = i2s_intr_event;
+  assign intr_vector[${interrupts.get_interrupt("w25q128jw_controller_intr_event")}] = w25q128jw_controller_intr_i;
 
   // External interrupts assignement
   for (genvar i = 0; i < NEXT_INT; i++) begin : gen_external_intr_vect
@@ -204,8 +212,8 @@ module peripheral_subsystem
   //Address Decoder
   logic [PERIPHERALS_PORT_SEL_WIDTH-1:0] peripheral_select;
 
-  obi_pkg::obi_req_t slave_fifo_req_sel;
-  obi_pkg::obi_resp_t slave_fifo_resp_sel;
+  obi_req_t slave_fifo_req_sel;
+  obi_rsp_t slave_fifo_resp_sel;
 
   // Clock-gating
   logic clk_cg;
@@ -224,13 +232,16 @@ module peripheral_subsystem
 
 `else
 
-  obi_pkg::obi_req_t slave_fifoin_req;
-  obi_pkg::obi_resp_t slave_fifoin_resp;
+  obi_req_t slave_fifoin_req;
+  obi_rsp_t slave_fifoin_resp;
 
-  obi_pkg::obi_req_t slave_fifoout_req;
-  obi_pkg::obi_resp_t slave_fifoout_resp;
+  obi_req_t slave_fifoout_req;
+  obi_rsp_t slave_fifoout_resp;
 
-  obi_fifo obi_fifo_i (
+  xheep_obi_fifo #(
+    .obi_req_t(obi_req_t),
+    .obi_rsp_t(obi_rsp_t)
+  ) obi_fifo_i (
       .clk_i(clk_cg),
       .rst_ni,
       .producer_req_i (slave_fifoin_req),
@@ -247,8 +258,8 @@ module peripheral_subsystem
 `endif
 
   periph_to_reg #(
-      .req_t(reg_pkg::reg_req_t),
-      .rsp_t(reg_pkg::reg_rsp_t),
+      .req_t(reg_req_t),
+      .rsp_t(reg_rsp_t),
       .IW(1)
   ) periph_to_reg_i (
       .clk_i(clk_cg),
@@ -285,8 +296,8 @@ module peripheral_subsystem
 
   reg_demux #(
       .NoPorts(core_v_mini_mcu_pkg::PERIPHERALS_RND),
-      .req_t  (reg_pkg::reg_req_t),
-      .rsp_t  (reg_pkg::reg_rsp_t)
+      .req_t  (reg_req_t),
+      .rsp_t  (reg_rsp_t)
   ) reg_demux_i (
       .clk_i(clk_cg),
       .rst_ni,
@@ -299,8 +310,8 @@ module peripheral_subsystem
 
 % if user_peripheral_domain.contains_peripheral('rv_plic'):
   reg_to_tlul #(
-      .req_t(reg_pkg::reg_req_t),
-      .rsp_t(reg_pkg::reg_rsp_t),
+      .req_t(reg_req_t),
+      .rsp_t(reg_rsp_t),
       .tl_h2d_t(tlul_pkg::tl_h2d_t),
       .tl_d2h_t(tlul_pkg::tl_d2h_t),
       .tl_a_user_t(tlul_pkg::tl_a_user_t),
@@ -338,8 +349,8 @@ module peripheral_subsystem
 
 % if user_peripheral_domain.contains_peripheral('spi_host'):
   spi_host #(
-      .reg_req_t(reg_pkg::reg_req_t),
-      .reg_rsp_t(reg_pkg::reg_rsp_t)
+      .reg_req_t(reg_req_t),
+      .reg_rsp_t(reg_rsp_t)
   ) spi_host_dma_i (
       .clk_i(clk_cg),
       .rst_ni,
@@ -376,8 +387,8 @@ module peripheral_subsystem
 
 % if user_peripheral_domain.contains_peripheral('gpio'):
   gpio #(
-      .reg_req_t(reg_pkg::reg_req_t),
-      .reg_rsp_t(reg_pkg::reg_rsp_t)
+      .reg_req_t(reg_req_t),
+      .reg_rsp_t(reg_rsp_t)
   ) gpio_i (
       .clk_i(clk_cg),
       .rst_ni,
@@ -398,8 +409,8 @@ module peripheral_subsystem
 
 % if user_peripheral_domain.contains_peripheral('i2c'):
   reg_to_tlul #(
-      .req_t(reg_pkg::reg_req_t),
-      .rsp_t(reg_pkg::reg_rsp_t),
+      .req_t(reg_req_t),
+      .rsp_t(reg_rsp_t),
       .tl_h2d_t(tlul_pkg::tl_h2d_t),
       .tl_d2h_t(tlul_pkg::tl_d2h_t),
       .tl_a_user_t(tlul_pkg::tl_a_user_t),
@@ -468,8 +479,8 @@ module peripheral_subsystem
 
 % if user_peripheral_domain.contains_peripheral('rv_timer'):
   reg_to_tlul #(
-      .req_t(reg_pkg::reg_req_t),
-      .rsp_t(reg_pkg::reg_rsp_t),
+      .req_t(reg_req_t),
+      .rsp_t(reg_rsp_t),
       .tl_h2d_t(tlul_pkg::tl_h2d_t),
       .tl_d2h_t(tlul_pkg::tl_d2h_t),
       .tl_a_user_t(tlul_pkg::tl_a_user_t),
@@ -500,8 +511,8 @@ module peripheral_subsystem
 
 % if user_peripheral_domain.contains_peripheral('spi2'):
   spi_host #(
-      .reg_req_t(reg_pkg::reg_req_t),
-      .reg_rsp_t(reg_pkg::reg_rsp_t)
+      .reg_req_t(reg_req_t),
+      .reg_rsp_t(reg_rsp_t)
   ) spi2_host (
       .clk_i(clk_cg),
       .rst_ni,
@@ -536,8 +547,8 @@ module peripheral_subsystem
 
 % if user_peripheral_domain.contains_peripheral('pdm2pcm'):
   pdm2pcm #(
-      .reg_req_t(reg_pkg::reg_req_t),
-      .reg_rsp_t(reg_pkg::reg_rsp_t)
+      .reg_req_t(reg_req_t),
+      .reg_rsp_t(reg_rsp_t)
   ) pdm2pcm_i (
       .clk_i(clk_cg),
       .rst_ni,
@@ -554,8 +565,8 @@ module peripheral_subsystem
 
 % if user_peripheral_domain.contains_peripheral('i2s'):
   i2s #(
-      .reg_req_t(reg_pkg::reg_req_t),
-      .reg_rsp_t(reg_pkg::reg_rsp_t)
+      .reg_req_t(reg_req_t),
+      .reg_rsp_t(reg_rsp_t)
   ) i2s_i (
       .clk_i(clk_cg),
       .rst_ni,
@@ -590,8 +601,8 @@ module peripheral_subsystem
 % if user_peripheral_domain.contains_peripheral('uart'):
 
   reg_to_tlul #(
-      .req_t(reg_pkg::reg_req_t),
-      .rsp_t(reg_pkg::reg_rsp_t),
+      .req_t(reg_req_t),
+      .rsp_t(reg_rsp_t),
       .tl_h2d_t(tlul_pkg::tl_h2d_t),
       .tl_d2h_t(tlul_pkg::tl_d2h_t),
       .tl_a_user_t(tlul_pkg::tl_a_user_t),
@@ -639,7 +650,9 @@ module peripheral_subsystem
 
 % endif
 
-% if user_peripheral_domain.contains_peripheral('serial_link'):
+
+% if user_peripheral_domain.contains_peripheral('serial_link_reg'):
+
   // TBD parametrizable to support different number of channels and lanes
   logic [3:0] ddr_i;
   logic [3:0] ddr_o;
@@ -647,20 +660,26 @@ module peripheral_subsystem
   assign {ddr_snd_3_o, ddr_snd_2_o, ddr_snd_1_o, ddr_snd_0_o} = ddr_o;
 
   serial_link_xheep_wrapper #(
-    .MaxClkDiv(32),
-    .DataWidth(32)
+    .MaxClkDiv(1024),
+    .AddrWidth(32),
+    .DataWidth(32),
+    .AxiAddrOffset(core_v_mini_mcu_pkg::SERIAL_LINK_START_ADDRESS)
   ) serial_link_xheep_wrapper_i (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .clk_reg_i(clk_i),       
     .rst_reg_ni(rst_ni),      
     .testmode_i('0),
-    .writer_req_i(peripheral_slv_req[core_v_mini_mcu_pkg::SERIAL_LINK_IDX]),
-    .writer_rsp_i(peripheral_slv_rsp[core_v_mini_mcu_pkg::SERIAL_LINK_IDX]),
+    .writer_req_i(serial_link_slave_req_i),
+    .writer_rsp_i(serial_link_slave_resp_o),
     .reader_req_i(peripheral_slv_req[core_v_mini_mcu_pkg::SERIAL_LINK_RECEIVER_FIFO_IDX]),
     .reader_resp_o(peripheral_slv_rsp[core_v_mini_mcu_pkg::SERIAL_LINK_RECEIVER_FIFO_IDX]),
     .cfg_req_i(peripheral_slv_req[core_v_mini_mcu_pkg::SERIAL_LINK_REG_IDX]),
     .cfg_rsp_o(peripheral_slv_rsp[core_v_mini_mcu_pkg::SERIAL_LINK_REG_IDX]),
+    .wrapper_cfg_req_i(peripheral_slv_req[core_v_mini_mcu_pkg::SERIAL_LINK_WRAPPER_REG_IDX]),
+    .wrapper_cfg_rsp_o(peripheral_slv_rsp[core_v_mini_mcu_pkg::SERIAL_LINK_WRAPPER_REG_IDX]),
+    .direct_write_req_o(serial_link_direct_write_req_o),
+    .direct_write_resp_i(serial_link_direct_write_resp_i),
     .ddr_rcv_clk_i,         
     .ddr_i,                   
     .ddr_snd_clk_o,          

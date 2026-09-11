@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
 module xilinx_gr_heep_wrapper
-  import obi_pkg::*;
-  import reg_pkg::*;
+  import xheep_obi_pkg::*;
+  import xheep_reg_pkg::*;
 #(
     parameter CLK_LED_COUNT_LENGTH = 27
 ) (
@@ -37,7 +37,6 @@ module xilinx_gr_heep_wrapper
     output logic clk_led_o,
 
     inout logic boot_select_i,
-    inout logic execute_from_flash_i,
 
     inout logic jtag_tck_i,
     inout logic jtag_tms_i,
@@ -152,7 +151,6 @@ module xilinx_gr_heep_wrapper
     .clk_i(clk_gen),
     .rst_ni(rst_n),
     .boot_select_i(boot_select_i),
-    .execute_from_flash_i(execute_from_flash_i),
     .jtag_tck_i(jtag_tck_i),
     .jtag_tms_i(jtag_tms_i),
     .jtag_trst_ni(jtag_trst_ni),

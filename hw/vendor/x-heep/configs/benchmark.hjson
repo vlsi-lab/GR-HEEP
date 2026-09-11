@@ -41,7 +41,6 @@
     }
 
     //if is_include is missing, it means it is always instantiated (like is_included "yes")
-    // spi_memio is included is the same of the spi_flash (little hack, this peripheral is going to be removed)
     ao_peripherals: {
         address: 0x20000000
         length:  0x00100000
@@ -58,14 +57,11 @@
             length:  0x00008000
             is_included: "yes"
         }
-        spi_memio: {
-            offset:  0x00028000
-            length:  0x00000008
-        }
         w25q128jw_controller: {
             offset:  0x00029000
             length:  0x00007000
             is_included: "no"
+            cache: "no"
         }
         dma: {
             offset:  0x00030000
@@ -158,11 +154,6 @@
             length:  0x00010000
             is_included: "yes"
         }
-        serial_link: {
-            offset:  0x00090000
-            length:  0x00010000
-            is_included: "no"
-        }
         serial_link_reg: {
             offset:  0x000A0000
             length:  0x00010000
@@ -173,10 +164,20 @@
             length:  0x00010000
             is_included: "no"
         }
+        serial_link_wrapper_mux: {
+            offset:  0x000C0000
+            length:  0x00010000
+            is_included: "no"
+        }
     }
 
     flash_mem: {
         address: 0x40000000
+        length:  0x01000000
+    }
+
+    serial_link: {
+        address: 0x50000000
         length:  0x01000000
     }
 

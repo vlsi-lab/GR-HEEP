@@ -40,7 +40,7 @@ This workflow ensures the stability and integrity of the codebase by running a s
 
 1.  **`determine-image-tag`**:
     *   **Purpose**: Determines the Docker image tag to be used by subsequent jobs.
-    *   **Details**: It checks the Git history for the most recent tag. If no tag is found in the current branch, it looks for one in the `main` branch. If no tags are found at all, it defaults to `latest`. This ensures that the CI always uses a relevant toolchain version.
+    *   **Details**: It checks the Git history for the most recent tag. If no tag is found in the current branch, it looks for one in the `main` branch. If no tags are found at all, it defaults to `latest`. If the current branch is a `release/<tag>` branch, it uses `<tag>` directly so that release PRs are tested with their corresponding freshly built Docker image. This ensures that the CI always uses a relevant toolchain version.
 
 2.  **`compile-apps`**:
     *   **Purpose**: Compiles all software applications with both GCC and Clang to ensure they build correctly.
@@ -67,15 +67,7 @@ This workflow ensures the stability and integrity of the codebase by running a s
         *   Runs `make mcu-gen` to regenerate all hardware files.
         *   Uses `util/git-diff.py` to check for any differences between the working directory and the git HEAD. The job fails if any differences are found.
 
-5.  **`gen-peripherals`**:
-    *   **Purpose**: Tests the Python-based peripheral generation scripts and templates.
-    *   **Dependencies**: Depends on `determine-image-tag`.
-    *   **Environment**: Runs inside the `x-heep-toolchain` Docker container.
-    *   **Steps**:
-        *   Runs `make clean-all` to ensure a clean state.
-        *   Executes `test/test_x_heep_gen/test_peripherals.py`.
-
-6.  **`check-vendor`**:
+5.  **`check-vendor`**:
     *   **Purpose**: Verifies that all third-party vendored dependencies are up-to-date.
     *   **Environment**: Runs inside a `ubuntu-latest` VM.
     *   **Steps**:
@@ -83,7 +75,7 @@ This workflow ensures the stability and integrity of the codebase by running a s
         *   Runs the `util/vendor.py` script for all `.vendor.hjson` files to re-vendor all dependencies.
         *   Uses `util/git-diff.py` to check for any differences, ensuring that any changes to vendored repositories are properly committed.
 
-7.  **`black-formatter`**:
+6.  **`black-formatter`**:
     *   **Purpose**: Checks that all Python code adheres to the `black` formatting standard.
     *   **Environment**: Runs inside a `ubuntu-latest` VM.
     *   **Steps**:

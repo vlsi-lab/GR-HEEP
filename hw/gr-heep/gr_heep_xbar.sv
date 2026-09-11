@@ -19,15 +19,15 @@ module gr_heep_xbar #(
   input logic [IdxWidth-1:0] default_idx_i,
 
   // Master ports
-  input  obi_pkg::obi_req_t  [XBAR_NMASTER-1:0] master_req_i,
-  output obi_pkg::obi_resp_t [XBAR_NMASTER-1:0] master_resp_o,
+  input  xheep_obi_pkg::xheep_obi_req_t [XBAR_NMASTER-1:0] master_req_i,
+  output xheep_obi_pkg::xheep_obi_rsp_t [XBAR_NMASTER-1:0] master_resp_o,
 
   // Slave ports
-  output obi_pkg::obi_req_t  [XBAR_NSLAVE-1:0] slave_req_o,
-  input  obi_pkg::obi_resp_t [XBAR_NSLAVE-1:0] slave_resp_i
+  output xheep_obi_pkg::xheep_obi_req_t [XBAR_NSLAVE-1:0] slave_req_o,
+  input  xheep_obi_pkg::xheep_obi_rsp_t [XBAR_NSLAVE-1:0] slave_resp_i
 
 );
-  import obi_pkg::*;
+  import xheep_obi_pkg::*;
   import core_v_mini_mcu_pkg::*;
 
   localparam int unsigned LogXbarNslave = XBAR_NSLAVE > 1 ? $clog2(XBAR_NSLAVE) : 32'd1;
@@ -42,8 +42,8 @@ module gr_heep_xbar #(
 
   // Neck crossbar
   /* verilator lint_off UNUSED */
-  obi_req_t neck_req;
-  obi_resp_t neck_resp;
+  xheep_obi_req_t neck_req;
+  xheep_obi_rsp_t neck_resp;
   /* verilator lint_on UNUSED */
 
   logic [XBAR_NMASTER-1:0] master_req_req;
@@ -126,7 +126,9 @@ module gr_heep_xbar #(
     end else begin : gen_xbar_1toM
       // N-to-1 crossbar
       xbar_varlat_n_to_one #(
-        .XBAR_NMASTER(XBAR_NMASTER)
+        .XBAR_NMASTER(XBAR_NMASTER),
+        .obi_req_t   (xheep_obi_pkg::xheep_obi_req_t),
+        .obi_rsp_t   (xheep_obi_pkg::xheep_obi_rsp_t)
       ) i_xbar_master (
         .clk_i        (clk_i),
         .rst_ni       (rst_ni),
@@ -138,8 +140,10 @@ module gr_heep_xbar #(
 
       // 1-to-N crossbar
       xbar_varlat_one_to_n #(
-        .XBAR_NSLAVE   (XBAR_NSLAVE),
-        .AGGREGATE_GNT (32'd0) // the neck request is aggregating all the input masters
+        .XBAR_NSLAVE(XBAR_NSLAVE),
+        .AGGREGATE_GNT(32'd0),  // the neck request is aggregating all the input masters
+        .obi_req_t(xheep_obi_pkg::xheep_obi_req_t),
+        .obi_rsp_t(xheep_obi_pkg::xheep_obi_rsp_t)
       ) i_xbar_slave (
         .clk_i        (clk_i),
         .rst_ni       (rst_ni),

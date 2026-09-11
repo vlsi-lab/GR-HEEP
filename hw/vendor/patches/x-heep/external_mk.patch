@@ -1,7 +1,7 @@
 diff --git a/external.mk b/external.mk
 --- a/external.mk
 +++ b/external.mk
-@@ -22,7 +22,8 @@ MAKE	= make
+@@ -27,7 +27,8 @@
  
  # Furthermore, a variable HEEP_DIR with the relative path between that directory and the X-HEEP base directory (where this file is lcoated) needs to be exported.
  # This will compute the opposite relative path (from the X-HEEP base directory to where this file is included).
