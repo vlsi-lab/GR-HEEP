@@ -25,52 +25,52 @@ module gr_heep_bus #(
   input logic [IdxWidth-1:0] default_idx_i,
 
   // X-HEEP master ports
-  input  obi_pkg::obi_req_t  heep_core_instr_req_i,
-  output obi_pkg::obi_resp_t heep_core_instr_resp_o,
+  input  xheep_obi_pkg::xheep_obi_req_t heep_core_instr_req_i,
+  output xheep_obi_pkg::xheep_obi_rsp_t heep_core_instr_resp_o,
 
-  input  obi_pkg::obi_req_t  heep_core_data_req_i,
-  output obi_pkg::obi_resp_t heep_core_data_resp_o,
+  input  xheep_obi_pkg::xheep_obi_req_t heep_core_data_req_i,
+  output xheep_obi_pkg::xheep_obi_rsp_t heep_core_data_resp_o,
 
-  input  obi_pkg::obi_req_t  heep_debug_master_req_i,
-  output obi_pkg::obi_resp_t heep_debug_master_resp_o,
+  input  xheep_obi_pkg::xheep_obi_req_t heep_debug_master_req_i,
+  output xheep_obi_pkg::xheep_obi_rsp_t heep_debug_master_resp_o,
 
-  input  obi_pkg::obi_req_t  [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_read_req_i,
-  output obi_pkg::obi_resp_t [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_read_resp_o,
+  input  xheep_obi_pkg::xheep_obi_req_t  [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_read_req_i,
+  output xheep_obi_pkg::xheep_obi_rsp_t [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_read_resp_o,
 
-  input  obi_pkg::obi_req_t  [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_write_req_i,
-  output obi_pkg::obi_resp_t [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_write_resp_o,
+  input  xheep_obi_pkg::xheep_obi_req_t  [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_write_req_i,
+  output xheep_obi_pkg::xheep_obi_rsp_t [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_write_resp_o,
 
-  input  obi_pkg::obi_req_t  [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_addr_req_i,
-  output obi_pkg::obi_resp_t [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_addr_resp_o,
+  input  xheep_obi_pkg::xheep_obi_req_t  [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_addr_req_i,
+  output xheep_obi_pkg::xheep_obi_rsp_t [core_v_mini_mcu_pkg::DMA_NUM_MASTER_PORTS-1:0] heep_dma_addr_resp_o,
 
   // External master ports
-  input  obi_pkg::obi_req_t  [ExtXbarNmasterRnd-1:0] ext_master_req_i,
-  output obi_pkg::obi_resp_t [ExtXbarNmasterRnd-1:0] ext_master_resp_o,
+  input  xheep_obi_pkg::xheep_obi_req_t [ExtXbarNmasterRnd-1:0] ext_master_req_i,
+  output xheep_obi_pkg::xheep_obi_rsp_t [ExtXbarNmasterRnd-1:0] ext_master_resp_o,
 
   // X-HEEP slave ports (one per external master)
-  output obi_pkg::obi_req_t  [ExtXbarNmasterRnd-1:0] heep_slave_req_o,
-  input  obi_pkg::obi_resp_t [ExtXbarNmasterRnd-1:0] heep_slave_resp_i,
+  output xheep_obi_pkg::xheep_obi_req_t [ExtXbarNmasterRnd-1:0] heep_slave_req_o,
+  input  xheep_obi_pkg::xheep_obi_rsp_t [ExtXbarNmasterRnd-1:0] heep_slave_resp_i,
 
   // External slave ports
-  output obi_pkg::obi_req_t  [ExtXbarNslaveRnd-1:0] ext_slave_req_o,
-  input  obi_pkg::obi_resp_t [ExtXbarNslaveRnd-1:0] ext_slave_resp_i
+  output xheep_obi_pkg::xheep_obi_req_t [ExtXbarNslaveRnd-1:0] ext_slave_req_o,
+  input  xheep_obi_pkg::xheep_obi_rsp_t [ExtXbarNslaveRnd-1:0] ext_slave_resp_i
 );
-  import obi_pkg::*;
+  import xheep_obi_pkg::*;
   import addr_map_rule_pkg::*;
   import core_v_mini_mcu_pkg::*;
 
   // X-HEEP + external master ports
-  obi_req_t [core_v_mini_mcu_pkg::SYSTEM_XBAR_NMASTER+EXT_XBAR_NMASTER-1:0] master_req;
-  obi_resp_t [core_v_mini_mcu_pkg::SYSTEM_XBAR_NMASTER+EXT_XBAR_NMASTER-1:0] master_resp;
+  xheep_obi_req_t [core_v_mini_mcu_pkg::SYSTEM_XBAR_NMASTER+EXT_XBAR_NMASTER-1:0] master_req;
+  xheep_obi_rsp_t [core_v_mini_mcu_pkg::SYSTEM_XBAR_NMASTER+EXT_XBAR_NMASTER-1:0] master_resp;
 
   // Forward crossbars ports
-  obi_req_t [EXT_XBAR_NMASTER-1:0][1:0] demux_xbar_req;
-  obi_resp_t [EXT_XBAR_NMASTER-1:0][1:0] demux_xbar_resp;
+  xheep_obi_req_t [EXT_XBAR_NMASTER-1:0][1:0] demux_xbar_req;
+  xheep_obi_rsp_t [EXT_XBAR_NMASTER-1:0][1:0] demux_xbar_resp;
 
   // Dummy external master port (to prevent unused warning)
-  obi_req_t [ExtXbarNmasterRnd-1:0] ext_master_req_unused;
-  obi_resp_t [ExtXbarNmasterRnd-1:0] heep_slave_resp_unused;
-  obi_resp_t [ExtXbarNslaveRnd-1:0] ext_slave_resp_unused;
+  xheep_obi_req_t [ExtXbarNmasterRnd-1:0] ext_master_req_unused;
+  xheep_obi_rsp_t [ExtXbarNmasterRnd-1:0] heep_slave_resp_unused;
+  xheep_obi_rsp_t [ExtXbarNslaveRnd-1:0] ext_slave_resp_unused;
 
   assign ext_master_req_unused = ext_master_req_i;
   assign heep_slave_resp_unused = heep_slave_resp_i;
@@ -151,7 +151,9 @@ module gr_heep_bus #(
     for (genvar i = 0; unsigned'(i) < EXT_XBAR_NMASTER; i++) begin : gen_demux_xbar
       xbar_varlat_one_to_n #(
         .XBAR_NSLAVE(32'd2),  // internal crossbar + external crossbar
-        .NUM_RULES  (32'd1)   // only the external address space is defined
+        .NUM_RULES(32'd1),  // only the external address space is defined
+        .obi_req_t(xheep_obi_pkg::xheep_obi_req_t),
+        .obi_rsp_t(xheep_obi_pkg::xheep_obi_rsp_t)
       ) demux_xbar_i (
         .clk_i        (clk_i),
         .rst_ni       (rst_ni),

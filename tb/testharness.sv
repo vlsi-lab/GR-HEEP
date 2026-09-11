@@ -13,13 +13,11 @@ module testharness #(
     input  wire         clk_i,
     input  wire         rst_ni,
     input  wire         boot_select_i,
-    input  wire         execute_from_flash_i,
     output wire         exit_valid_o,
 `else  // VERILATOR
     inout  wire         clk_i,
     inout  wire         rst_ni,
     inout  wire         boot_select_i,
-    inout  wire         execute_from_flash_i,
     inout  wire         exit_valid_o,
 `endif  // VERILATOR
     output logic [31:0] exit_value_o,
@@ -32,8 +30,8 @@ module testharness #(
 );
   `include "tb_util.svh"
 
-  import obi_pkg::*;
-  import reg_pkg::*;
+  import xheep_obi_pkg::*;
+  import xheep_reg_pkg::*;
 
   localparam SWITCH_ACK_LATENCY = 15;
 
@@ -42,7 +40,6 @@ module testharness #(
   wire clk;
   wire rst_n;
   wire boot_select;
-  wire execute_from_flash;
   wire exit_valid;
   wire ddr_rcv_clk;
   wire ddr_snd_clk;
@@ -97,14 +94,12 @@ module testharness #(
   assign clk = clk_i;
   assign rst_n = rst_ni;
   assign boot_select = boot_select_i;
-  assign execute_from_flash = execute_from_flash_i;
   assign exit_valid_o = exit_valid;
 
   gr_heep gr_heep_i (
       .clk_i(clk),
       .rst_ni(rst_n),
       .boot_select_i(boot_select),
-      .execute_from_flash_i(execute_from_flash),
       .jtag_tck_i(mux_jtag_tck),
       .jtag_tms_i(mux_jtag_tms),
       .jtag_trst_ni(mux_jtag_trstn),

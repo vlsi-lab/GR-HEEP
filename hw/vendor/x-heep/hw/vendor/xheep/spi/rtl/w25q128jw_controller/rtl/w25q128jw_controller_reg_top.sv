@@ -77,9 +77,8 @@ module w25q128jw_controller_reg_top #(
   logic control_quad_qs;
   logic control_quad_wd;
   logic control_quad_we;
-  logic status_qs;
-  logic status_wd;
-  logic status_we;
+  logic status_ready_qs;
+  logic status_cache_qs;
   logic [31:0] f_address_qs;
   logic [31:0] f_address_wd;
   logic f_address_we;
@@ -101,6 +100,7 @@ module w25q128jw_controller_reg_top #(
   logic [7:0] dma_slot_wait_counter_qs;
   logic [7:0] dma_slot_wait_counter_wd;
   logic dma_slot_wait_counter_we;
+  logic [31:0] cache_data_qs;
 
   // Register instances
   // R[control]: V(False)
@@ -185,28 +185,53 @@ module w25q128jw_controller_reg_top #(
 
   // R[status]: V(False)
 
+  //   F[ready]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
-  ) u_status (
+  ) u_status_ready (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (status_we),
-    .wd     (status_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.status.de),
-    .d      (hw2reg.status.d ),
+    .de     (hw2reg.status.ready.de),
+    .d      (hw2reg.status.ready.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.status.q ),
+    .q      (reg2hw.status.ready.q ),
 
     // to register interface (read)
-    .qs     (status_qs)
+    .qs     (status_ready_qs)
+  );
+
+
+  //   F[cache]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_status_cache (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.cache.de),
+    .d      (hw2reg.status.cache.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.status.cache.q ),
+
+    // to register interface (read)
+    .qs     (status_cache_qs)
   );
 
 
@@ -399,9 +424,35 @@ module w25q128jw_controller_reg_top #(
   );
 
 
+  // R[cache_data]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_cache_data (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.cache_data.de),
+    .d      (hw2reg.cache_data.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cache_data.q ),
+
+    // to register interface (read)
+    .qs     (cache_data_qs)
+  );
 
 
-  logic [8:0] addr_hit;
+
+
+  logic [9:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == W25Q128JW_CONTROLLER_CONTROL_OFFSET);
@@ -413,6 +464,7 @@ module w25q128jw_controller_reg_top #(
     addr_hit[6] = (reg_addr == W25Q128JW_CONTROLLER_INTR_STATUS_OFFSET);
     addr_hit[7] = (reg_addr == W25Q128JW_CONTROLLER_INTR_ENABLE_OFFSET);
     addr_hit[8] = (reg_addr == W25Q128JW_CONTROLLER_DMA_SLOT_WAIT_COUNTER_OFFSET);
+    addr_hit[9] = (reg_addr == W25Q128JW_CONTROLLER_CACHE_DATA_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -428,7 +480,8 @@ module w25q128jw_controller_reg_top #(
                (addr_hit[5] & (|(W25Q128JW_CONTROLLER_PERMIT[5] & ~reg_be))) |
                (addr_hit[6] & (|(W25Q128JW_CONTROLLER_PERMIT[6] & ~reg_be))) |
                (addr_hit[7] & (|(W25Q128JW_CONTROLLER_PERMIT[7] & ~reg_be))) |
-               (addr_hit[8] & (|(W25Q128JW_CONTROLLER_PERMIT[8] & ~reg_be)))));
+               (addr_hit[8] & (|(W25Q128JW_CONTROLLER_PERMIT[8] & ~reg_be))) |
+               (addr_hit[9] & (|(W25Q128JW_CONTROLLER_PERMIT[9] & ~reg_be)))));
   end
 
   assign control_start_we = addr_hit[0] & reg_we & !reg_error;
@@ -439,9 +492,6 @@ module w25q128jw_controller_reg_top #(
 
   assign control_quad_we = addr_hit[0] & reg_we & !reg_error;
   assign control_quad_wd = reg_wdata[2];
-
-  assign status_we = addr_hit[1] & reg_we & !reg_error;
-  assign status_wd = reg_wdata[0];
 
   assign f_address_we = addr_hit[2] & reg_we & !reg_error;
   assign f_address_wd = reg_wdata[31:0];
@@ -475,7 +525,8 @@ module w25q128jw_controller_reg_top #(
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = status_qs;
+        reg_rdata_next[0] = status_ready_qs;
+        reg_rdata_next[1] = status_cache_qs;
       end
 
       addr_hit[2]: begin
@@ -504,6 +555,10 @@ module w25q128jw_controller_reg_top #(
 
       addr_hit[8]: begin
         reg_rdata_next[7:0] = dma_slot_wait_counter_qs;
+      end
+
+      addr_hit[9]: begin
+        reg_rdata_next[31:0] = cache_data_qs;
       end
 
       default: begin

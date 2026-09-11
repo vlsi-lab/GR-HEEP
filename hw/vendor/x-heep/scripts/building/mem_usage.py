@@ -86,9 +86,11 @@ def get_banks_and_sizes(mcu_pkg_path):
     il_group_first_bank = {}
     with mcu_pkg_path.open("r", encoding="utf-8") as file:
         for line in file:
-            if "NUM_BANKS =" in line:
+            # Anchor on a word boundary so unrelated params that merely END in
+            # "NUM_BANKS" (e.g. MY_NUM_BANKS) do not clobber the RAM bank count.
+            if re.search(r"\bNUM_BANKS\s*=", line):
                 num_banks = int(line.split("=")[1].strip().strip(";"))
-            elif "NUM_BANKS_IL =" in line:
+            elif re.search(r"\bNUM_BANKS_IL\s*=", line):
                 num_il_banks = int(line.split("=")[1].strip().strip(";"))
             else:
                 size_match = re.search(r"RAM(\d+)_SIZE = 32'h([0-9A-Fa-f]+);", line)

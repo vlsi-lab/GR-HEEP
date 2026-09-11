@@ -1,8 +1,7 @@
-diff --git a/hw/fpga/constraints/aup-zu3/constraints.xdc b/hw/fpga/constraints/aup-zu3/constraints.xdc
-index ec4af5b..a1ea11a 100644
---- a/hw/fpga/constraints/aup-zu3/constraints.xdc
-+++ b/hw/fpga/constraints/aup-zu3/constraints.xdc
-@@ -3,5 +3,5 @@ create_clock -add -name jtag_clk_pin -period 100.00 -waveform {0 5} [get_ports {
+diff --git a/hw/fpga/xheep_fpga_support/constraints/aup-zu3/constraints.xdc b/hw/fpga/xheep_fpga_support/constraints/aup-zu3/constraints.xdc
+--- a/hw/fpga/xheep_fpga_support/constraints/aup-zu3/constraints.xdc
++++ b/hw/fpga/xheep_fpga_support/constraints/aup-zu3/constraints.xdc
+@@ -7,5 +7,5 @@
  create_clock -add -name spi_slave_clk_pin -period 16.00 -waveform {0 5} [get_ports {spi_slave_sck_io}];
  
  ### Reset Constraints
@@ -10,11 +9,10 @@ index ec4af5b..a1ea11a 100644
 -set_false_path -from x_heep_system_i/rstgen_i/i_rstgen_bypass/synch_regs_q_reg[3]/C
 +set_false_path -from gr_heep_i/core_v_mini_mcu_i/debug_subsystem_i/dm_obi_top_i/i_dm_top/i_dm_csrs/dmcontrol_q_reg\[ndmreset\]/C
 +set_false_path -from gr_heep_i/rstgen_i/i_rstgen_bypass/synch_regs_q_reg[3]/C
-diff --git a/hw/fpga/constraints/common/spi_slave.xdc b/hw/fpga/constraints/common/spi_slave.xdc
-index 953cf29..883ffa2 100644
---- a/hw/fpga/constraints/common/spi_slave.xdc
-+++ b/hw/fpga/constraints/common/spi_slave.xdc
-@@ -1,79 +1,79 @@
+diff --git a/hw/fpga/xheep_fpga_support/constraints/common/spi_slave.xdc b/hw/fpga/xheep_fpga_support/constraints/common/spi_slave.xdc
+--- a/hw/fpga/xheep_fpga_support/constraints/common/spi_slave.xdc
++++ b/hw/fpga/xheep_fpga_support/constraints/common/spi_slave.xdc
+@@ -5,79 +5,79 @@
  ### SPI Slave Constraints
  
  ### PAD Mux Constraints
@@ -141,11 +139,10 @@ index 953cf29..883ffa2 100644
 --to x_heep_system_i/core_v_mini_mcu_i/debug_subsystem_i/gen_spi_slave.obi_spi_slave_i/u_dcfifo_rx/i_cdc_fifo_gray/i_src/gen_sync[*].i_sync/reg_q_reg[0]/D 5.00
 +set_max_delay -datapath_only -from gr_heep_i/core_v_mini_mcu_i/debug_subsystem_i/gen_spi_slave.obi_spi_slave_i/u_dcfifo_rx/i_cdc_fifo_gray/i_dst/rptr_q_reg[*]/C \
 +-to gr_heep_i/core_v_mini_mcu_i/debug_subsystem_i/gen_spi_slave.obi_spi_slave_i/u_dcfifo_rx/i_cdc_fifo_gray/i_src/gen_sync[*].i_sync/reg_q_reg[0]/D 5.00
-diff --git a/hw/fpga/constraints/genesys2/constraints.xdc b/hw/fpga/constraints/genesys2/constraints.xdc
-index 154120d..ca51e7b 100644
---- a/hw/fpga/constraints/genesys2/constraints.xdc
-+++ b/hw/fpga/constraints/genesys2/constraints.xdc
-@@ -2,5 +2,5 @@ create_clock -add -name jtag_clk_pin -period 100.00 -waveform {0 5} [get_ports {
+diff --git a/hw/fpga/xheep_fpga_support/constraints/genesys2/constraints.xdc b/hw/fpga/xheep_fpga_support/constraints/genesys2/constraints.xdc
+--- a/hw/fpga/xheep_fpga_support/constraints/genesys2/constraints.xdc
++++ b/hw/fpga/xheep_fpga_support/constraints/genesys2/constraints.xdc
+@@ -6,5 +6,5 @@
  create_clock -add -name spi_slave_clk_pin -period 20.00 -waveform {0 5} [get_ports {spi_slave_sck_io}];
  
  ### Reset Constraints
@@ -153,11 +150,10 @@ index 154120d..ca51e7b 100644
 -set_false_path -from x_heep_system_i/rstgen_i/i_rstgen_bypass/synch_regs_q_reg[3]/C
 +set_false_path -from gr_heep_i/core_v_mini_mcu_i/debug_subsystem_i/dm_obi_top_i/i_dm_top/i_dm_csrs/dmcontrol_q_reg\[ndmreset\]/C
 +set_false_path -from gr_heep_i/rstgen_i/i_rstgen_bypass/synch_regs_q_reg[3]/C
-diff --git a/hw/fpga/constraints/nexys/constraints.xdc b/hw/fpga/constraints/nexys/constraints.xdc
-index a0f47a0..ec5497c 100644
---- a/hw/fpga/constraints/nexys/constraints.xdc
-+++ b/hw/fpga/constraints/nexys/constraints.xdc
-@@ -3,6 +3,6 @@ create_clock -add -name jtag_clk_pin -period 100.00 -waveform {0 5} [get_ports {
+diff --git a/hw/fpga/xheep_fpga_support/constraints/nexys/constraints.xdc b/hw/fpga/xheep_fpga_support/constraints/nexys/constraints.xdc
+--- a/hw/fpga/xheep_fpga_support/constraints/nexys/constraints.xdc
++++ b/hw/fpga/xheep_fpga_support/constraints/nexys/constraints.xdc
+@@ -7,6 +7,6 @@
  create_clock -add -name spi_slave_clk_pin -period 20.00 -waveform {0 5} [get_ports {spi_slave_sck_io}];
  
  ### Reset Constraints
@@ -166,11 +162,10 @@ index a0f47a0..ec5497c 100644
 +set_false_path -from gr_heep_i/core_v_mini_mcu_i/debug_subsystem_i/dm_obi_top_i/i_dm_top/i_dm_csrs/dmcontrol_q_reg\[ndmreset\]/C
 +set_false_path -from gr_heep_i/rstgen_i/i_rstgen_bypass/synch_regs_q_reg[3]/C
  
-diff --git a/hw/fpga/constraints/zcu102/constraints.xdc b/hw/fpga/constraints/zcu102/constraints.xdc
-index c8fd23f..870227c 100644
---- a/hw/fpga/constraints/zcu102/constraints.xdc
-+++ b/hw/fpga/constraints/zcu102/constraints.xdc
-@@ -2,5 +2,5 @@ create_clock -add -name jtag_clk_pin -period 100.00 -waveform {0 5} [get_ports {
+diff --git a/hw/fpga/xheep_fpga_support/constraints/zcu102/constraints.xdc b/hw/fpga/xheep_fpga_support/constraints/zcu102/constraints.xdc
+--- a/hw/fpga/xheep_fpga_support/constraints/zcu102/constraints.xdc
++++ b/hw/fpga/xheep_fpga_support/constraints/zcu102/constraints.xdc
+@@ -6,5 +6,5 @@
  create_clock -add -name spi_slave_clk_pin -period 16.00 -waveform {0 5} [get_ports {spi_slave_sck_io}];
  
  ### Reset Constraints
@@ -178,11 +173,10 @@ index c8fd23f..870227c 100644
 -set_false_path -from x_heep_system_i/rstgen_i/i_rstgen_bypass/synch_regs_q_reg[3]/C
 +set_false_path -from gr_heep_i/core_v_mini_mcu_i/debug_subsystem_i/dm_obi_top_i/i_dm_top/i_dm_csrs/dmcontrol_q_reg\[ndmreset\]/C
 +set_false_path -from gr_heep_i/rstgen_i/i_rstgen_bypass/synch_regs_q_reg[3]/C
-diff --git a/hw/fpga/constraints/zcu104/constraints.xdc b/hw/fpga/constraints/zcu104/constraints.xdc
-index c8fd23f..870227c 100644
---- a/hw/fpga/constraints/zcu104/constraints.xdc
-+++ b/hw/fpga/constraints/zcu104/constraints.xdc
-@@ -2,5 +2,5 @@ create_clock -add -name jtag_clk_pin -period 100.00 -waveform {0 5} [get_ports {
+diff --git a/hw/fpga/xheep_fpga_support/constraints/zcu104/constraints.xdc b/hw/fpga/xheep_fpga_support/constraints/zcu104/constraints.xdc
+--- a/hw/fpga/xheep_fpga_support/constraints/zcu104/constraints.xdc
++++ b/hw/fpga/xheep_fpga_support/constraints/zcu104/constraints.xdc
+@@ -6,5 +6,5 @@
  create_clock -add -name spi_slave_clk_pin -period 16.00 -waveform {0 5} [get_ports {spi_slave_sck_io}];
  
  ### Reset Constraints
@@ -190,11 +184,10 @@ index c8fd23f..870227c 100644
 -set_false_path -from x_heep_system_i/rstgen_i/i_rstgen_bypass/synch_regs_q_reg[3]/C
 +set_false_path -from gr_heep_i/core_v_mini_mcu_i/debug_subsystem_i/dm_obi_top_i/i_dm_top/i_dm_csrs/dmcontrol_q_reg\[ndmreset\]/C
 +set_false_path -from gr_heep_i/rstgen_i/i_rstgen_bypass/synch_regs_q_reg[3]/C
-diff --git a/hw/fpga/constraints/pynq-z2/constraints.xdc.tpl b/hw/fpga/constraints/pynq-z2/constraints.xdc.tpl
-index 92087c8..47dad69 100644
---- a/hw/fpga/constraints/pynq-z2/constraints.xdc.tpl
-+++ b/hw/fpga/constraints/pynq-z2/constraints.xdc.tpl
-@@ -6,8 +6,8 @@ create_clock -add -name jtag_clk_pin -period 100.00 -waveform {0 50} [get_ports
+diff --git a/hw/fpga/xheep_fpga_support/constraints/pynq-z2/constraints.xdc.tpl b/hw/fpga/xheep_fpga_support/constraints/pynq-z2/constraints.xdc.tpl
+--- a/hw/fpga/xheep_fpga_support/constraints/pynq-z2/constraints.xdc.tpl
++++ b/hw/fpga/xheep_fpga_support/constraints/pynq-z2/constraints.xdc.tpl
+@@ -10,8 +10,8 @@
  create_clock -add -name spi_slave_clk_pin -period 16.00 -waveform {0 8} [get_ports {spi_slave_sck_io}];
  
  ### Reset Constraints

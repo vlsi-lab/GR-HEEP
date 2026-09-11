@@ -8,6 +8,8 @@
     dma = base_peripheral_domain.get_dma()
     memory_ss = xheep.memory_ss()
     external_domains = base_peripheral_domain.get_power_manager().get_external_domains()
+    address_map = xheep.address_map()
+    interrupts = xheep.get_interrupts()
 %>
 
 #ifndef COREV_MINI_MCU_H_
@@ -30,13 +32,13 @@ extern "C" {
 
 #define EXTERNAL_DOMAINS ${external_domains}
 
-#define DEBUG_START_ADDRESS 0x${debug_start_address}
-#define DEBUG_SIZE 0x${debug_size_address}
+#define DEBUG_START_ADDRESS 0x${f'{address_map.get_region("debug").get_start_address():08X}'}
+#define DEBUG_SIZE 0x${f'{address_map.get_region("debug").get_length():08X}'}
 #define DEBUG_END_ADDRESS (DEBUG_START_ADDRESS + DEBUG_SIZE)
 
 // base peripherals
-#define AO_PERIPHERAL_START_ADDRESS ${hex(base_peripheral_domain.get_start_address())}
-#define AO_PERIPHERAL_SIZE ${hex(base_peripheral_domain.get_length())}
+#define AO_PERIPHERAL_START_ADDRESS 0x${f'{address_map.get_region("base_peripheral_domain").get_start_address():08X}'}
+#define AO_PERIPHERAL_SIZE 0x${f'{address_map.get_region("base_peripheral_domain").get_length():08X}'}
 #define AO_PERIPHERAL_END_ADDRESS (AO_PERIPHERAL_START_ADDRESS + AO_PERIPHERAL_SIZE)
 
 % for peripheral in base_peripheral_domain.get_peripherals():
@@ -80,8 +82,8 @@ extern "C" {
 #define DMA_ZERO_PADDING ${dma.get_zero_padding()}
 
 // user peripherals
-#define PERIPHERAL_START_ADDRESS ${hex(user_peripheral_domain.get_start_address())}
-#define PERIPHERAL_SIZE ${hex(user_peripheral_domain.get_length())}
+#define PERIPHERAL_START_ADDRESS 0x${f'{address_map.get_region("user_peripheral_domain").get_start_address():08X}'}
+#define PERIPHERAL_SIZE 0x${f'{address_map.get_region("user_peripheral_domain").get_length():08X}'}
 #define PERIPHERAL_END_ADDRESS (PERIPHERAL_START_ADDRESS + PERIPHERAL_SIZE)
 
 % for peripheral in user_peripheral_domain.get_peripherals():
@@ -121,21 +123,31 @@ extern "C" {
 % if not user_peripheral_domain.contains_peripheral('uart'):
 #define UART_START_ADDRESS 0
 % endif
-% if not user_peripheral_domain.contains_peripheral('serial_link'):
+% if not user_peripheral_domain.contains_peripheral('serial_link_reg'):
 #define SERIAL_LINK_REG_START_ADDRESS 0
+% endif
+% if not user_peripheral_domain.contains_peripheral('serial_link_receiver_fifo'):
+#define SERIAL_LINK_RECEIVER_FIFO_START_ADDRESS 0 
+% endif
+% if not user_peripheral_domain.contains_peripheral('serial_link_wrapper_reg'):
+#define SERIAL_LINK_WRAPPER_REG_START_ADDRESS 0  
 % endif
 // End of the section
 
-#define EXT_SLAVE_START_ADDRESS 0x${ext_slave_start_address}
-#define EXT_SLAVE_SIZE 0x${ext_slave_size_address}
+#define EXT_SLAVE_START_ADDRESS 0x${f'{address_map.get_region("ext_slaves").get_start_address():08X}'}
+#define EXT_SLAVE_SIZE 0x${f'{address_map.get_region("ext_slaves").get_length():08X}'}
 #define EXT_SLAVE_END_ADDRESS (EXT_SLAVE_START_ADDRESS + EXT_SLAVE_SIZE)
 
-#define FLASH_MEM_START_ADDRESS 0x${flash_mem_start_address}
-#define FLASH_MEM_SIZE 0x${flash_mem_size_address}
+#define FLASH_MEM_START_ADDRESS 0x${f'{address_map.get_region("flash_mem").get_start_address():08X}'}
+#define FLASH_MEM_SIZE 0x${f'{address_map.get_region("flash_mem").get_length():08X}'}
 #define FLASH_MEM_END_ADDRESS (FLASH_MEM_START_ADDRESS + FLASH_MEM_SIZE)
 
-#define QTY_INTR ${len(interrupts)}
-% for key, value in interrupts.items():
+#define SERIAL_LINK_START_ADDRESS 0x${f'{address_map.get_region("serial_link").get_start_address():08X}'}
+#define SERIAL_LINK_SIZE 0x${f'{address_map.get_region("serial_link").get_length():08X}'}
+#define SERIAL_LINK_END_ADDRESS (SERIAL_LINK_START_ADDRESS + SERIAL_LINK_SIZE)
+
+#define QTY_INTR ${interrupts.PLIC_NUM_INTERRUPTS}
+% for key, value in interrupts.get_interrupts().items():
 #define ${key.upper()} ${value}
 % endfor
 

@@ -8,6 +8,9 @@ MAKE	= make
 mkfile_path := $(shell dirname "$(realpath $(firstword $(MAKEFILE_LIST)))")
 $(info $$You are executing from: $(mkfile_path))
 
+# Parent project root directory (useful when vendoring X-HEEP in other projects)
+HEEP_EXTERNAL_ROOT 	?= .
+
 # Include the self-documenting tool
 export FILE_FOR_HELP=$(mkfile_path)/Makefile
 
@@ -33,6 +36,10 @@ PYTHON  	:= $(shell which python)
 RV_PROFILE  := $(shell which rv_profile)
 AREA_PLOT   := $(shell which area-plot)
 endif
+CONDA_ENV_NAME ?= $(shell sed -n 's/^name: //p' util/conda_environment.yml)
+
+# FuseSoC cores root. Defaults to the root of the parent project vendoring X-HEEP.
+FUSESOC_CORES_ROOT	?= $(HEEP_EXTERNAL_ROOT)
 
 # RegTool and StructGen path
 REGTOOL 			?= $(mkfile_path)/hw/vendor/pulp_platform/register_interface/vendor/lowrisc_opentitan/util/regtool.py
@@ -50,7 +57,7 @@ PROJECT ?= hello_world
 
 # Folder where the linker scripts are located
 LINK_FOLDER ?= $(mkfile_path)/sw/linker
-# Linker options are 'on_chip' (default),'flash_load','flash_exec','freertos'
+# Linker options are 'on_chip' (default),'flash_load','freertos'
 LINKER ?= on_chip
 
 # Target options are 'sim' (default) and 'pynq-z2' and 'nexys-a7-100t'
@@ -59,7 +66,6 @@ TARGET ?= sim
 # Mcu-gen configuration files
 X_HEEP_CFG  ?= configs/general.hjson
 PADS_CFG ?= configs/pad_cfg.py
-PYTHON_X_HEEP_CFG ?=
 
 # MCU-Gen template files to generate
 MCU_GEN_TEMPLATES = $(shell find . \
@@ -67,9 +73,11 @@ MCU_GEN_TEMPLATES = $(shell find . \
      -path './util/*' ! -path './util/profile' ! -path './util/profile/*' -o \
      -path './test/*' \) -prune -o \
   -name '*.tpl' -print)
+MCU_GEN_OUTPUTS = $(patsubst %.tpl,%, $(MCU_GEN_TEMPLATES))
 
 # Optionally, additional external template files can be provided to mcu-gen
 EXTERNAL_MCU_GEN_TEMPLATES ?= 
+EXTERNAL_MCU_GEN_OUTPUTS = $(patsubst %.tpl,%, $(EXTERNAL_MCU_GEN_TEMPLATES))
 
 # Compiler options are 'gcc' (default) and 'clang'
 COMPILER 		?= gcc
@@ -119,16 +127,29 @@ AREA_PLOT_RPT    ?= $(word 1, $(shell [ -d $(BUILD_DIR) ] && find $(BUILD_DIR) -
 AREA_PLOT_OUTDIR ?= $(BUILD_DIR)/area-plot/ # output directory for the area plot
 AREA_PLOT_TOP    ?=# top level module to consider for the area plot (automatically infer)
 
+# Remote upload to PYNQ
+FUSESOC_BUILD_NAME 	:= $(notdir $(FUSESOC_BUILD_DIR))
+BD_NAME				:= xilinx_core_v_mini_mcu
+BITSTREAM_SOURCE   	:= $(FUSESOC_BUILD_DIR)/$(FPGA_BOARD)-vivado/$(FUSESOC_BUILD_NAME).runs/impl_1/$(BD_NAME)_wrapper.bit
+HWH_SOURCE 			:= $(FUSESOC_BUILD_DIR)/$(FPGA_BOARD)-vivado/$(FUSESOC_BUILD_NAME).gen/sources_1/bd/xilinx_ps_wizard/hw_handoff/xilinx_ps_wizard.hwh 
+
 # Vendored IPs
-VENDOR_FILES	:= $(shell find hw/vendor sw/vendor util -maxdepth 2 -type f -name "*.vendor.hjson" -print)
+VENDOR_FILES	:= $(shell find hw/vendor hw/fpga sw/vendor util -maxdepth 2 -type f -name "*.vendor.hjson" -print)
 VENDOR_LOCKS	:= $(subst .vendor.hjson,.lock.hjson,$(VENDOR_FILES))
 
 # Export variables to sub-makefiles
 export
 
 ## @section Conda
-conda:
-	conda env create -f util/conda_environment.yml
+conda: util/conda_environment.yml
+	@export CMAKE_POLICY_VERSION_MINIMUM=3.5; \
+	if conda info --envs | grep -q $(CONDA_ENV_NAME); then \
+		echo "Environment $(CONDA_ENV_NAME) exists, updating..."; \
+		conda env update -f util/conda_environment.yml --prune; \
+	else \
+		echo "Creating new $(CONDA_ENV_NAME) environment..."; \
+		conda env create -f util/conda_environment.yml; \
+	fi
 
 ## @section Installation
 
@@ -138,16 +159,12 @@ conda:
 ## @param MEMORY_BANKS=[2(default)to(16-MEMORY_BANKS_IL)]
 ## @param MEMORY_BANKS_IL=[0(default),2,4,8]
 ## @param X_HEEP_CFG=[configs/general.hjson(default),<path-to-config-file>]
-## @param PYTHON_X_HEEP_CFG=[configs/general.py(default),<path-to-config-file>]
 mcu-gen:
-	$(PYTHON) util/xheep_gen/mcu_gen.py --config $(X_HEEP_CFG) --python_config $(PYTHON_X_HEEP_CFG) --pads_cfg $(PADS_CFG) --outtpl "$(MCU_GEN_TEMPLATES)" --externaltpl "$(EXTERNAL_MCU_GEN_TEMPLATES)" --cpu $(CPU) --bus $(BUS) --memorybanks $(MEMORY_BANKS) --memorybanks_il $(MEMORY_BANKS_IL)
-	bash -c "cd hw/ip/soc_ctrl; source soc_ctrl_gen.sh; cd ../../../"
-	bash -c "cd hw/ip/power_manager; source power_manager_gen.sh; cd ../../../"
-	bash -c "cd hw/ip/pdm2pcm; source pdm2pcm_gen.sh; cd ../../../"
-	bash -c "cd hw/system/pad_control; source pad_control_gen.sh; cd ../../../"
-	bash -c "cd hw/vendor/xheep/dma; source dma_gen.sh; cd ../../../"
-	bash -c "cd hw/ip/boot_rom; make clean; make all; cd ../../../"
-	$(MAKE) -C hw/vendor/xheep/spi reg SW_DIR=$(mkfile_path)/sw/device/lib/drivers/
+	$(PYTHON) util/xheep_gen/mcu_gen.py --config $(X_HEEP_CFG) --pads_cfg $(PADS_CFG) --outtpl "$(MCU_GEN_TEMPLATES)" --externaltpl "$(EXTERNAL_MCU_GEN_TEMPLATES)" --cpu $(CPU) --bus $(BUS) --memorybanks $(MEMORY_BANKS) --memorybanks_il $(MEMORY_BANKS_IL)
+
+	@echo "### MCU-GEN completed! Running FuseSoC register generators..."	
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --target=sim --tool=verilator $(FUSESOC_FLAGS) --setup openhwgroup.org:systems:core-v-mini-mcu
+
 	$(MAKE) verible
 	$(MAKE) format-python
 
@@ -174,7 +191,7 @@ format-python:
 ## Generates the build folder in sw using CMake to build (compile and linking)
 ## @param PROJECT=<folder_name_of_the_project_to_be_built>
 ## @param TARGET=sim(default),systemc,pynq-z2,nexys-a7-100t,genesys2,aup-zu3,zcu102,zcu104
-## @param LINKER=on_chip(default),flash_load,flash_exec
+## @param LINKER=on_chip(default),flash_load
 ## @param COMPILER=gcc(default),clang
 ## @param COMPILER_PREFIX=riscv32-corev-(default),riscv32-unknown-
 ## @param ARCH=rv32imc(default),<any_RISC-V_ISA_string_supported_by_the_CPU>
@@ -203,15 +220,15 @@ app-list:
 
 ## Verilator simulation with C++
 verilator-build: | .check-verilator
-	$(FUSESOC) --cores-root . run --no-export --target=sim --tool=verilator $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=sim --tool=verilator $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
 
 ## Verilator simulation with SystemC
 verilator-build-sc: | .check-verilator
-	$(FUSESOC) --cores-root . run --no-export --target=sim_sc --tool=verilator $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=sim_sc --tool=verilator $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
 
 ## Questasim simulation
 questasim-build:
-	$(FUSESOC) --cores-root . run --no-export --target=sim --tool=modelsim $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=sim --tool=modelsim $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
 
 ## Questasim simulation with HDL optimized compilation
 questasim-build-opt: questasim-build
@@ -226,38 +243,38 @@ questasim-build-opt-upf: questasim-build
 ## @param CPU=cv32e20(default),cv32e40p,cv32e40x,cv32e40px
 ## @param BUS=onetoM(default),NtoM
 vcs-build:
-	$(FUSESOC) --cores-root . run --no-export --target=sim --tool=vcs $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=sim --tool=vcs $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
 
 ## VCS-AMS simulation:
 vcs-ams-build:
-	$(FUSESOC) --cores-root . run --no-export --target=sim --flag "ams_sim" --tool=vcs $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=sim --flag "ams_sim" --tool=vcs $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
 
 ## xcelium simulation
 xcelium-build:
-	$(FUSESOC) --cores-root . run --no-export --target=sim --tool=xcelium $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=sim --tool=xcelium $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildsim.log
 
 ## Generates the build output for helloworld application
 ## Uses verilator to simulate the HW model and run the FW
 verilator-run-helloworld: mcu-gen verilator-build
 	$(MAKE) -C sw PROJECT=hello_world TARGET=$(TARGET) LINKER=$(LINKER) COMPILER=$(COMPILER) COMPILER_PREFIX=$(COMPILER_PREFIX) ARCH=$(ARCH);
-	$(FUSESOC) --cores-root . run --no-export --target=sim --tool=verilator $(FUSESOC_FLAGS) --run openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) \
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=sim --tool=verilator $(FUSESOC_FLAGS) --run openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) \
 		--run_options="+firmware=../../../sw/build/main.hex $(SIM_ARGS)"
 
 ## First builds the app and then uses Verilator to simulate the HW model and run the FW
 verilator-run-app: app
-	$(FUSESOC) --cores-root . run --no-export --target=sim --tool=verilator $(FUSESOC_FLAGS) --run openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) \
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=sim --tool=verilator $(FUSESOC_FLAGS) --run openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) \
 		--run_options="+firmware=../../../sw/build/main.hex $(SIM_ARGS)"
 
 ## Launches the RTL simulation with the compiled firmware (`app` target) using
 ## the C++ Verilator model previously built (`verilator-build` target).
 verilator-run:
-	$(FUSESOC) --cores-root . run --no-export --target=sim --tool=verilator $(FUSESOC_FLAGS) --run openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) \
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=sim --tool=verilator $(FUSESOC_FLAGS) --run openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) \
 		--run_options="+firmware=../../../sw/build/main.hex $(SIM_ARGS)"
 
 ## Launches the RTL simulation with the compiled firmware (`app` target) using
 ## the SystemC Verilator model previously built (`verilator-build-sc` target).
 verilator-run-sc:
-	$(FUSESOC) --cores-root . run --no-export --target=sim_sc --tool=verilator $(FUSESOC_FLAGS) --run openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) \
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=sim_sc --tool=verilator $(FUSESOC_FLAGS) --run openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) \
 		--run_options="+firmware=../../../sw/build/main.hex $(SIM_ARGS)"
 
 ## Opens gtkwave to view the waveform generated by the last verilator simulation
@@ -288,25 +305,33 @@ questasim-run-opt-app: app
 ## @param FPGA_BOARD=pynq-z2,nexys-a7-100t,genesys2,aup-zu3,zcu102,zcu104
 ## @param FUSESOC_FLAGS=--flag=<flagname>
 vivado-fpga:
-	$(FUSESOC) --cores-root . run --no-export --target=$(FPGA_BOARD) $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildvivado.log
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=$(FPGA_BOARD) $(FUSESOC_FLAGS) --build openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildvivado.log
 
 vivado-fpga-nobuild:
-	$(FUSESOC) --cores-root . run --no-export --target=$(FPGA_BOARD) $(FUSESOC_FLAGS) --setup openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildvivado.log
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=$(FPGA_BOARD) $(FUSESOC_FLAGS) --setup openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildvivado.log
 
 ## Loads the generated bitstream into the FPGA
 ## @param FPGA_BOARD=pynq-z2,nexys-a7-100t,genesys2,aup-zu3,zcu102,zcu104
 vivado-fpga-pgm:
-	$(FUSESOC) --cores-root . run --no-export --target=$(FPGA_BOARD) $(FUSESOC_FLAGS) --run openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee programfpga.log
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=$(FPGA_BOARD) $(FUSESOC_FLAGS) --run openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee programfpga.log
+
+## Loads the generated bitstream into the remote FPGA 
+## @param FPGA_BOARD=pynq-z2,aup-zu3
+## @param REMOTE=user@host
+## @param REMOTE_DIR=/remote/dir
+vivado-fpga-remote-pgm:
+	scp $(BITSTREAM_SOURCE) $(REMOTE):$(REMOTE_DIR)/
+	scp $(HWH_SOURCE) $(REMOTE):$(REMOTE_DIR)/$(BD_NAME)_wrapper.hwh
 
 ## @section ASIC
 ## Note that for this step you need to provide technology-dependent files (e.g., libs, constraints)
 asic:
-	$(FUSESOC) --cores-root . run --no-export --target=asic_synthesis $(FUSESOC_FLAGS) --setup openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee builddesigncompiler.log
+	$(FUSESOC) --cores-root $(FUSESOC_CORES_ROOT) run --no-export --target=asic_synthesis $(FUSESOC_FLAGS) --setup openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee builddesigncompiler.log
 
 openroad-sky130:
 	git checkout hw/vendor/pulp_platform/common_cells/*
 	sed -i 's/(\*[^\n]*\*)//g' hw/vendor/pulp_platform/common_cells/src/*.sv
-	$(FUSESOC) --verbose --cores-root . run --target=asic_yosys_synthesis --flag=use_sky130 openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildopenroad.log
+	$(FUSESOC) --verbose --cores-root $(FUSESOC_CORES_ROOT) run --target=asic_yosys_synthesis --flag=use_sky130 openhwgroup.org:systems:core-v-mini-mcu $(FUSESOC_PARAM) 2>&1 | tee buildopenroad.log
 	git checkout hw/vendor/pulp_platform/common_cells/*
 
 ## @section Program, Execute, and Debug w/ EPFL_Programmer
@@ -352,8 +377,6 @@ test:
 	$(RM) test/*.log
 	$(PYTHON) test/test_apps/test_apps.py $(TEST_FLAGS) 2>&1 | tee test/test_apps/test_apps.log
 	@echo "You can also find the output in test/test_apps/test_apps.log"
-	$(PYTHON) test/test_x_heep_gen/test_peripherals.py
-	@echo "You can also find the peripheral test outputs in test/test_x_heep_gen/outputs"
 
 ## Compares two mcu-gen runs and lists the differences in the generated files. 
 ## It can be used to manually check if a change in the configuration or in the mcu-gen code has an
@@ -407,16 +430,18 @@ vendor-clean:
 ## Remove the sw build folder
 .PHONY: clean-app
 clean-app:
-	@rm -rf sw/build
+	$(RM) -r sw/build
 
 ## Remove the build folders
 .PHONY: clean
 clean: clean-app
-	@rm -rf $(BUILD_DIR)
+	$(RM) -r $(BUILD_DIR)
+	$(RM) $(MCU_GEN_OUTPUTS) $(EXTERNAL_MCU_GEN_OUTPUTS)
+	find . -type f -name "*_reg_gen.cache" -delete
 
 ## Leave the repository in a clean state, removing all generated files. For now, it just calls clean.
 .PHONY: clean-all
-clean-all: clean
+clean-all: clean vendor-clean
 
 ## @section Utilities
 # Check if a program is available in PATH

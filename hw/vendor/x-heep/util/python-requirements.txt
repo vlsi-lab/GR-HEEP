@@ -1,12 +1,15 @@
 gitpython==3.1.25
 hjson==3.0.2
-pyyaml==6.0.2
-yamlfmt==1.1.0
-mako==1.1.6
-jsonref==0.2
+pyyaml==6.0.3
+mako==1.4.1
+jsonref==1.1.0
 black==24.8.0
 tabulate==0.9.0
 deepdiff
+
+# pkg_resources (removed from setuptools>=82) is still required by vendored
+# OpenTitan reggen tooling invoked during mcu-gen
+setuptools<81
 
 # Development version with OT-specific changes
 git+https://github.com/x-heep/fusesoc.git@ot#egg=fusesoc
@@ -15,7 +18,7 @@ git+https://github.com/x-heep/fusesoc.git@ot#egg=fusesoc
 git+https://github.com/x-heep/edalize.git
 
 # RISC-V firmware profiler
-git+https://github.com/vlsi-lab/rv_profile.git
+git+https://github.com/edge-group-polito/rv_profile.git
 
 # Area Plot
-git+https://github.com/vlsi-lab/area-plot-post-syn.git
+git+https://github.com/edge-group-polito/area-plot-post-syn.git

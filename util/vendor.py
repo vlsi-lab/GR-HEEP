@@ -302,7 +302,8 @@ class Mapping1:
             shutil.copy(str(from_path), str(to_path))
         else:
             ignore = ignore_patterns(str(upstream_path), *exclude_files)
-            shutil.copytree(str(from_path), str(to_path), ignore=ignore)
+            shutil.copytree(str(from_path), str(to_path), ignore=ignore,
+                            symlinks=True)
 
         # Apply any patches to the copied files. If self.patch_dir is None,
         # there are none to apply. Otherwise, resolve it relative to patch_dir.

@@ -58,3 +58,7 @@ lint_off -rule NOLATCH -file "*clock_gate.sv" -match "*"
 
 lint_off -rule ASCRANGE -file "*gr_heep_bus.sv" -match "Ascending bit range vector: left < right of bit range: [-1:0]"
 
+
+// Only driven when the W25Q128JW controller cache is enabled, which GR-HEEP does not use
+lint_off -rule UNUSEDSIGNAL -file "*w25q128jw_controller.sv" -match "Signal is not used: 'cache_lookup_addr'"
+lint_off -rule UNUSEDSIGNAL -file "*w25q128jw_controller.sv" -match "Signal is not used: 'memio_be'"

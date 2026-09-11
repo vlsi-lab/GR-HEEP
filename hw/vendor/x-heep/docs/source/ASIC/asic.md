@@ -60,7 +60,7 @@ Other resources that leverages `HEEPocrates` (silicon implementation, FPGA, or s
 
 ## HEEPnosis
 
-``HEEPnosis`` is the second silicon implementation of X-HEEP, made by a collaboration between the ESL lab and the 
+``HEEPnosis`` is the second silicon implementation of X-HEEP, made by a collaboration between the ESL lab and the
 [TCL](https://www.epfl.ch/labs/tcl/) lab of EPFL.
 
 <p align="center">
@@ -81,7 +81,7 @@ There are no references yet about this chip as it hasn't been tested yet.
 
 ## X-TRELA
 
-`X-TRELA` is the third sillicon implementation of X-HEEP, developed by the [CEI](https://www.cei.upm.es/) lab of the Universidad Politécnica de Madrid (UPM), Spain.
+`X-TRELA` is the third silicon implementation of X-HEEP, developed by the [CEI](https://www.cei.upm.es/) lab of the Universidad Politécnica de Madrid (UPM), Spain.
 
 ![X-TRELA](..//images/chips/xtrela.png)
 
@@ -95,11 +95,11 @@ This chip has been funded by the [A-IQ Ready](https://www.aiqready.eu/) project,
 
 ## HEEPidermis
 
-HEEPidermis is the first X-HEEP MCU extended with an analog front end. It was built as a collaboration of the Embedded Systems Laboratory (ESL) of EPFL with Universidad Católica del Uruguay (UCU) and Politecnico di Torino. 
+HEEPidermis is the first X-HEEP MCU extended with an analog front end. It was built as a collaboration of the Embedded Systems Laboratory (ESL) of EPFL with Universidad Católica del Uruguay (UCU) and Politecnico di Torino.
 
-It was designed to record Galvanic Skin Response (GSR), for which it includes two 8-bit current Digital-to-Analog Converters (iDACs) and two digitization channels with a VCO-based ADC, which can be used independently or as pseudo differential. The integrated DMA allows the autonomous operation of iDACs and ADCs. Additionally, the DMA can filter data before it is stored in memory by diverting it into a Level-Crossing stream accelerator. 
+It was designed to record Galvanic Skin Response (GSR), for which it includes two 8-bit current Digital-to-Analog Converters (iDACs) and two digitization channels with a VCO-based ADC, which can be used independently or as pseudo differential. The integrated DMA allows the autonomous operation of iDACs and ADCs. Additionally, the DMA can filter data before it is stored in memory by diverting it into a Level-Crossing stream accelerator.
 
-HEEPidermis can be used as a powerful ADC with embedded feature extraction by reading data through its SPI slave interface. It can also control external ADCs for more versatile measurements, both trough SPI and through a dedicated ΔΣ input where data can be decimated. 
+HEEPidermis can be used as a powerful ADC with embedded feature extraction by reading data through its SPI slave interface. It can also control external ADCs for more versatile measurements, both trough SPI and through a dedicated ΔΣ input where data can be decimated.
 
 ![HEEPidermis](../images/chips/HEEPidermis.png)
 
@@ -116,7 +116,7 @@ This chip has been sponsored by [SwissChips](https://swisschips.ethz.ch/).
 <p  align="center">Figure 3: X-EROS Test Chip layout in TSMC 65nm LP </p>
 
 
-The chip was taped out in June 2025. The chosen X-HEEP configuration for this SoC includes a CV32E40P CPU, an NtoM bus topology and four 128KB contiguous banks of 32 KB each. Peripherals include a DMA, SPI interfaces, an I2C interface, GPIOs, a UART, and JTAG. 
+The chip was taped out in June 2025. The chosen X-HEEP configuration for this SoC includes a CV32E40P CPU, an NtoM bus topology and four 128KB contiguous banks of 32 KB each. Peripherals include a DMA, SPI interfaces, an I2C interface, GPIOs, a UART, and JTAG.
 
 `X-EROS` integrates an [Extensible Reliable Offloading Solution (EROS)](https://github.com/des-cei/eros), featuring three CV32E20 CPU capable of operating in both safety and non‑safety modes and two 32 KB memory banks for instruction and data respectively. It is intended to serve as a safety‑critical accelerator island for mixed‑critical applications.
 For more information about this safety island accelerator, check this [paper](https://dl.acm.org/doi/pdf/10.1145/3706594.3726982).
@@ -127,7 +127,7 @@ This chip has been sponsored by Talent2Concept (PDC2023-145865)
 
 ## HEEPatia
 
-`HEEPatia` is the first silicon implementation of X-HEEP taped out in the TSMC 16nm technology. It was built as part of a collaboration between the EPFL Embedded Systems Laboratory and Telecommunication Circuits Laboratory, as well as Politecnico di Torino. 
+`HEEPatia` is the first silicon implementation of X-HEEP taped out in the TSMC 16nm technology. It was built as part of a collaboration between the EPFL Embedded Systems Laboratory and Telecommunication Circuits Laboratory, as well as Politecnico di Torino.
 
 ![HEEPatia](..//images/chips/heepatia.png)
 
@@ -137,22 +137,38 @@ This chip has been sponsored by Talent2Concept (PDC2023-145865)
 
 In addition to the novel coprocessor and memory units, HEEPatia contains various heterogeneous accelerator architectures to improve the performance and decrease the energy consumption of different edge-AI workloads. Namely, it integrates two instances of near-memory computing [Carus](https://ieeexplore.ieee.org/abstract/document/10964076) with the DomaIn-specific System-technology CO-design (DISCO) CGRA, an IP based on the [VWR2A](https://dl.acm.org/doi/abs/10.1145/3489517.3530980) architecture.
 
-HEEPatia is implemented using a mixture of LVT and SVT cells. Its purposes are to serve as a research platform used for comparing various hardware IPs in terms of PPA trade-offs, and to use a combination of the aforementioned IPs to execute state-of-the-art edge-AI applicaitons.
+HEEPatia is implemented using a mixture of LVT and SVT cells. Its purposes are to serve as a research platform used for comparing various hardware IPs in terms of PPA trade-offs, and to use a combination of the aforementioned IPs to execute state-of-the-art edge-AI applications.
 
 This chip has been sponsored by [SwissChips](https://swisschips.ethz.ch/).
 
 ## polHEEPo
 
-`polHEEPo` is the first silicon tape‑out of the X‑HEEP design carried out by the [VLSI](https://www.vlsilab.polito.it/) lab at the Poltecnico di Torino, Italy.
+`polHEEPo` is the first silicon tape‑out of the X‑HEEP design carried out by the [VLSI](https://www.vlsilab.polito.it/) lab at the Politecnico di Torino, Italy.
 
 ![polHEEPo](..//images/chips/polheepo.png)
 
 <p  align="center">Figure 5: polHEEPo Test Chip layout in TSMC 65nm LP </p>
 
-The chip was taped out in October 2025. The chosen X-HEEP configuration for this SoC includes a CV32E40P CPU, an NtoM bus topology and ten interleaved banks of 32 KB each for a total of 320 KB of on-chip memory. Peripherals include a 4 channel DMA, configured to have 4 maasters on the bus, SPI interfaces, an I2C interface, GPIOs, a UART, and JTAG. 
+The chip was taped out in October 2025. The chosen X-HEEP configuration for this SoC includes a CV32E40P CPU, an NtoM bus topology and ten interleaved banks of 32 KB each for a total of 320 KB of on-chip memory. Peripherals include a 4 channel DMA, configured to have 4 maasters on the bus, SPI interfaces, an I2C interface, GPIOs, a UART, and JTAG.
 
-polHEEPo integrates different accelerators to target many applications, from edge AI and ML to postquantum cryptography. These include [KECCAK](https://dl.acm.org/doi/abs/10.1145/3587135.3591432), [ASCON](https://ieeexplore.ieee.org/abstract/document/11130264), and ROGUE, targeting post-quantum cryptography, lightweight cryptography, and AI/ML workloads. There is also [PUFFo](https://www.mdpi.com/1424-8220/25/6/1678), which is a hardware Physically Unclonable Function (PUF) module, enabling on-chip generation of unique and tamper-resistant cryptographic keys. 
+polHEEPo integrates different accelerators to target many applications, from edge AI and ML to postquantum cryptography. These include [KECCAK](https://dl.acm.org/doi/abs/10.1145/3587135.3591432), [ASCON](https://ieeexplore.ieee.org/abstract/document/11130264), and ROGUE, targeting post-quantum cryptography, lightweight cryptography, and AI/ML workloads. There is also [PUFFo](https://www.mdpi.com/1424-8220/25/6/1678), which is a hardware Physically Unclonable Function (PUF) module, enabling on-chip generation of unique and tamper-resistant cryptographic keys.
 
 The design uses LVT cells, slim digital IOs, and CUP bondpads, and memory macros sourced from TSMC.
 
 This chip has been sponsored by project SERICS (PE00000014) under the MUR National Recovery and Resilience Plan funded by the European Union – NextGenerationEU with the collaboration of [Chips-IT foundation](https://www.chips.it).
+
+## HEEPokranios
+
+HEEPokranios is a neural recording SoC powered by an X-HEEP MCU. It was built as a collaboration of the Embedded Systems Laboratory (ESL) of EPFL with Universidad Católica del Uruguay (UCU) and Imperial College London.
+
+It was designed to record intracortical EEG through a diverse set of front-ends spanning from high-resolution Delta-Sigma modulators to spiking band power feature extraction and event-based ADCs.
+
+HEEPokranios can be used standalone thanks to its Wireless Power and Data Transfer (WPDT) block, which can provide the SoC with the power and bandwidth to acquire and stream several channels simultaneously. All needed references and regulators are integrated on-chip.
+
+Five shanks at the bottom of the chip will enable in-vitro recordings of up to 4 indepedent channels. Additionally, the first shank includes a current DAC to monitor electrode-tissue impedance.
+
+![HEEPokranios](../images/chips/HEEPokranios.png)
+
+<p  align="center">HEEPokranios SoC top-level layout in TSMC 65nm LP </p>
+
+This chip has been sponsored by [SwissChips](https://swisschips.ethz.ch/).

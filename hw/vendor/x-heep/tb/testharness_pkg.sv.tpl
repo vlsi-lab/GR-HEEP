@@ -9,13 +9,12 @@ package testharness_pkg;
   import addr_map_rule_pkg::*;
   import core_v_mini_mcu_pkg::*;
 
-  % if user_peripheral_domain.contains_peripheral('serial_link'):
-    localparam EXT_XBAR_NMASTER = 8;
-    localparam EXT_XBAR_NSLAVE = 3;
-  % else: 
-    localparam EXT_XBAR_NMASTER = 8;
-    localparam EXT_XBAR_NSLAVE = 2;
-  %endif
+  localparam EXT_XBAR_NMASTER = 8;
+`ifdef SIM_SYSTEMC
+  localparam EXT_XBAR_NSLAVE = 1;
+`else
+  localparam EXT_XBAR_NSLAVE = ${2 + (1 if user_peripheral_domain.contains_peripheral('serial_link_reg') else 0)};
+`endif
 
   //master idx
   localparam logic [31:0] EXT_MASTER0_IDX = 0;
@@ -27,40 +26,49 @@ package testharness_pkg;
   localparam logic [31:0] EXT_MASTER6_IDX = 6;
   localparam logic [31:0] EXT_MASTER7_IDX = 7;
 
+`ifdef SIM_SYSTEMC
+  localparam logic [31:0] SLOW_MEMORY_START_ADDRESS = core_v_mini_mcu_pkg::EXT_SLAVE_START_ADDRESS;
+  localparam logic [31:0] SLOW_MEMORY_SIZE = 32'h400;
+  localparam logic [31:0] SLOW_MEMORY_END_ADDRESS = SLOW_MEMORY_START_ADDRESS + SLOW_MEMORY_SIZE;
+`else
   //slave mmap and idx of slow memory interleaved
   localparam logic [31:0] SLOW_MEMORY_START_ADDRESS = core_v_mini_mcu_pkg::EXT_SLAVE_START_ADDRESS;
   localparam logic [31:0] SLOW_MEMORY_SIZE = 32'h400;
   localparam logic [31:0] SLOW_MEMORY_END_ADDRESS = SLOW_MEMORY_START_ADDRESS + SLOW_MEMORY_SIZE;
+`endif
   localparam logic [31:0] SLOW_MEMORY0_IDX = 32'd0;
   localparam logic [31:0] SLOW_MEMORY1_IDX = 32'd1;
 
-  % if user_peripheral_domain.contains_peripheral('serial_link'):
+  % if user_peripheral_domain.contains_peripheral('serial_link_reg'):
     //slave sl
     localparam logic [31:0] SL_EXT_START_ADDRESS = SLOW_MEMORY_END_ADDRESS;
-    localparam logic [31:0] SL_EXT_SIZE = 32'h200;
+    localparam logic [31:0] SL_EXT_SIZE = 32'h10000;
     localparam logic [31:0] SL_EXT_END_ADDRESS = SL_EXT_START_ADDRESS + SL_EXT_SIZE;
     localparam logic [31:0] SL_EXT_IDX = 32'd2;
-  %endif
+  % endif
 
   localparam addr_map_rule_t [EXT_XBAR_NSLAVE-1:0] EXT_XBAR_ADDR_RULES = '{
       '{
           idx: SLOW_MEMORY0_IDX,
           start_addr: SLOW_MEMORY_START_ADDRESS,
           end_addr: SLOW_MEMORY_END_ADDRESS
-      },
+      }
+`ifndef SIM_SYSTEMC
+      ,
       '{
           idx: SLOW_MEMORY1_IDX,
           start_addr: SLOW_MEMORY_START_ADDRESS,
           end_addr: SLOW_MEMORY_END_ADDRESS
       }
-      % if user_peripheral_domain.contains_peripheral('serial_link'):
+`endif
+      % if user_peripheral_domain.contains_peripheral('serial_link_reg'):
       ,
       '{idx: SL_EXT_IDX, start_addr: SL_EXT_START_ADDRESS, end_addr: SL_EXT_END_ADDRESS}
       %endif
   };
 
   //slave encoder
-  % if user_peripheral_domain.contains_peripheral('serial_link'):
+  % if user_peripheral_domain.contains_peripheral('serial_link_reg'):
     localparam EXT_NPERIPHERALS = 7;
   %else: 
     localparam EXT_NPERIPHERALS = 6;  
@@ -102,7 +110,7 @@ package testharness_pkg;
   localparam logic [31:0] DLC_END_ADDRESS = DLC_START_ADDRESS + DLC_SIZE;
   localparam logic [31:0] DLC_IDX = 32'd5;
 
-  % if user_peripheral_domain.contains_peripheral('serial_link'):
+  % if user_peripheral_domain.contains_peripheral('serial_link_reg'):
     // External SERIAL LINK Peripheral
     localparam logic [31:0] SL_REG_START_ADDRESS= core_v_mini_mcu_pkg::EXT_PERIPHERAL_START_ADDRESS+ 32'h06000;
     localparam logic [31:0] SL_REG_SIZE = 32'h100;
@@ -129,7 +137,7 @@ package testharness_pkg;
           end_addr: IM2COL_SPC_END_ADDRESS
       },
       '{idx: DLC_IDX, start_addr: DLC_START_ADDRESS, end_addr: DLC_END_ADDRESS}
-      % if user_peripheral_domain.contains_peripheral('serial_link'):
+      % if user_peripheral_domain.contains_peripheral('serial_link_reg'):
       ,
       '{idx: SL_REG_IDX, start_addr: SL_REG_START_ADDRESS, end_addr: SL_REG_END_ADDRESS}
       %endif

@@ -31,8 +31,7 @@ endif
 TARGET ?= asic
 
 # X-HEEP mcu-gen configuration
-PYTHON_X_HEEP_CFG   ?= $(ROOT_DIR)/config/mcu-gen-config.py
-X_HEEP_CFG  		?= $(ROOT_DIR)/config/mcu-gen-config.hjson
+X_HEEP_CFG  		?= $(ROOT_DIR)/config/mcu-gen-config.py
 PADS_CFG_ASIC		?= $(ROOT_DIR)/config/gr-heep_pad_cfg.py
 PADS_CFG_FPGA		?= $(ROOT_DIR)/config/gr-heep_pad_cfg.py  # Currently the same as ASIC, but can be different if needed in the future
 EXTERNAL_DOMAINS	:= 0 # TO BE UPDATED according to the number of external domains. FIXME: move to mcu-gen
@@ -84,7 +83,6 @@ mcu-gen: | $(BUILD_DIR)/
 	@echo "### Building X-HEEP MCU for '$(TARGET)'..."
 	$(MAKE) -f $(XHEEP_MAKE) mcu-gen \
 		X_HEEP_CFG=$(X_HEEP_CFG) \
-		PYTHON_X_HEEP_CFG=$(PYTHON_X_HEEP_CFG) \
 		PADS_CFG=$(PADS_CFG) \
 		EXTERNAL_DOMAINS=$(EXTERNAL_DOMAINS) \
 		EXTERNAL_MCU_GEN_TEMPLATES="$(EXTERNAL_MCU_GEN_TEMPLATES)"

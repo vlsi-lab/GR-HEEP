@@ -21,7 +21,7 @@ This relies on a fork of [edalize](https://github.com/davideschiavone/edalize) t
 
 ## Install OpenROAD
 
-First, clone clone `OpenROAD-flow-scripts`
+First, clone `OpenROAD-flow-scripts`
 
 ```bash
 cd flow
@@ -51,7 +51,7 @@ cd klayout
 
 ## Edalize
 
-`x-heep` uses a verion of `edalize` + `fusesoc` that supports `sv2v` to convert SystemVerilog to Verilog so that
+`x-heep` uses a version of `edalize` + `fusesoc` that supports `sv2v` to convert SystemVerilog to Verilog so that
 `OpenRoad` (`yosys`) can compile it.
 
 You need to install `sv2v` as:
